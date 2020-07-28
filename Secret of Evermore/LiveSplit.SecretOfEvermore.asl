@@ -8,17 +8,15 @@
 // Most of the RAM values taken from:
 // https://datacrystal.romhacking.net/wiki/Secret_of_Evermore:RAM_map
 //
-// Installation guide:
+// Manual installation guide:
 // https://github.com/LiveSplit/LiveSplit/blob/master/Documentation/Auto-Splitters.md#testing-your-script
 // https://github.com/LiveSplit/LiveSplit/blob/master/Documentation/Auto-Splitters.md#debugging
 
 state("higan"){}
 state("bsnes"){}
-state("bsnes-plus"){}
 state("snes9x"){}
 state("snes9x-x64"){}
 state("emuhawk"){}
-state("retroarch"){}
 
 startup
 {
@@ -47,20 +45,24 @@ startup
 	
 	AddAct(1, "Prehistoria");
 	AddSplit ("flowers", "Flowers", "Split on dog dragging the boy to the right, after entering the map with 0 HP");
+	AddOptionalSplit ("raptors", "Raptors", "Split on leaving the map", false);
 	AddSplit ("thraxx", "Thraxx", "Split on leaving the room");
+	AddOptionalSplit ("graveyard", "Graveyard", "Split on victory hymn", false);
+	AddOptionalSplit ("volcano", "Enter Volcano", "Split on entering the map", false);
 	AddSplit ("magmar", "Magmar", "Split on victory hymn");
 	
 	AddAct(2, "Antiqua");
 	AddSplit("enterNobilia", "Enter Nobilia", "Split on resting pose of the boy, after entering Nobilia for the first time");
 	AddSplit("marketTimer", "Market Timer", "Split on resting pose of the boy, after leaving the market post Market Timer");
 	AddSplit("vigor", "Vigor", "Split on victory hymn");
-	AddOptionalSplit("enterTemple", "Enter Temple", "Split on entering the temple", false);
+	AddOptionalSplit("temple", "Enter Temple", "Split on entering the temple", false);
 	AddSplit("megataur", "Megataur", "Split on victory hymn");
 	AddSplit("rimsala", "Rimsala", "Split on victory hymn");
 	AddSplit("aegis", "Aegis", "Split on victory hymn");
 	AddSplit("aquagoth", "Aquagoth", "Split on victory hymn");
 	
 	AddAct(3, "Gothica");
+	AddOptionalSplit("dogMaze", "Dog Maze", "Split on entering the map", false);
 	AddSplit("footknight", "FootKnight", "Split on victory hymn");
 	AddSplit("badBoy", "Bad Boy", "Split on victory hymn");
 	AddSplit("timberdrake", "Timberdrake", "Split on victory hymn");
@@ -68,12 +70,13 @@ startup
 	AddSplit("sterling", "Sterling", "Split on victory hymn");
 	AddSplit("mungola", "Mungola", "Split on victory hymn");
 	AddOptionalSplit("glassFight", "Glass Fight", "Split on victory hymn", false);
-	AddOptionalSplit("windwalker", "Windwalker", "Split on leaving the screen, at the beginning of the fading animation", false);
-	AddSplit("gauge", "Gauge #1", "Split on landing the Wind Walker, at the beginning of the fading animation");
-	AddSplit("rocket", "Rocket", "Split on leaving the screen, at the beginning of the fading animation");
+	AddOptionalSplit("windwalker", "Windwalker", "Split on leaving the screen", false);
+	AddSplit("gauge", "Gauge #1", "Split on landing the Wind Walker");
+	AddSplit("rocket", "Rocket", "Split on leaving the screen");
 	
 	AddAct(4, "Omnitopia");
-	AddOptionalSplit("saturn", "Saturn Skip", "Split on entering the boss rush room, at the beginning of the fading animation", false);
+	AddOptionalSplit("professor", "Professor", "Split on entering the map", false);
+	AddOptionalSplit("saturn", "Saturn Skip", "Split on entering the boss rush room", false);
 	AddSplit("carltron", "Carltron's Robot", "Split on xp gain (The boy can still be controlled)");
 }
 
@@ -224,20 +227,24 @@ split
 		
 	// Act 1
 	checkSplit("flowers", Map(92) && XReached(234));
+	checkSplit("raptors", MapTransition(92, 81));
 	checkSplit("thraxx", MapTransition(24, 103));
+	checkSplit("graveyard", Map(39) && Hymn());
+	checkSplit("volcano", MapTransition(65, 60));
 	checkSplit("magmar", Map(63) && Hymn());
 	
 	// Act 2
 	checkSplit("enterNobilia", Map(10) && XReached(88));
 	checkSplit("marketTimer", Map(8) && Music(38) && XReached(56));
 	checkSplit("vigor", Map(29) && Hymn());
-	checkSplit("enterTemple", Map(41));
+	checkSplit("temple", Map(41));
 	checkSplit("megataur", Map(42) && Hymn());
 	checkSplit("rimsala", Map(88) && Hymn());
 	checkSplit("aegis", Map(9) && Hymn());
 	checkSplit("aquagoth", Map(109) && Hymn());
 	
 	// Act 3
+	checkSplit("dogMaze", MapTransition(113, 115));
 	checkSplit("footknight", Map(25) && Hymn());
 	checkSplit("badBoy", Map(31) && Hymn());
 	checkSplit("timberdrake", Map(32) && Hymn());
@@ -250,6 +257,7 @@ split
 	checkSplit("rocket", MapTransition(57, 72));
 	
 	// Act 4
+	checkSplit("professor", MapTransition(72, 70));
 	checkSplit("saturn", MapTransition(72, 74));
 	checkSplit("carltron", Map(74) && XpGained(100000));
 	
