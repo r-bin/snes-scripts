@@ -22,11 +22,6 @@ function clean_empty(array)
 	  
 	  inputs = clean_empty(split(inputs_string, "\n"))
 	  
-	  for i = 1, #inputs do
-		  --print("i="..i..", input="..inputs[i])
-		  joypad.setfrommnemonicstr(inputs[i])
-	  end
-	  
 	  return inputs
   end
   
@@ -48,7 +43,7 @@ function clean_empty(array)
   SETTING_SETS = {
 	  {
 		  name = "Camera Setup",
-		  allow_empty_input = true,
+		  allow_empty_input = false,
 		  allow_more_than_one_button = true,
 		  watchers = {
 			  {
@@ -70,7 +65,7 @@ function clean_empty(array)
 		  inputs = nil
 	  },
 	  {
-		  name = "Crash RNG Setup",
+		  name = "Crash Game",
 		  allow_empty_input = false,
 		  allow_more_than_one_button = false,
 		  rng_buttons = nil,
@@ -80,7 +75,7 @@ function clean_empty(array)
 				  data_type = "ushort",
 				  name = "camera_xy",
 				  win = nil,
-				  reset = function(value) return value < 0x8101 end
+				  reset = function(value) return not (value == 0x8101) end
 			  },
 			  {
 				  address = 0x4EB3,
@@ -88,13 +83,6 @@ function clean_empty(array)
 				  name = "boy_hp",
 				  win = nil,
 				  reset = function(value) return value <= 20 end
-			  },
-			  {
-				  address = 0x3378,
-				  data_type = "ushort",
-				  name = "crash_rng",
-				  win = function(value) return value == 0x005A end,
-				  reset = function(value) return not (value == 0) end
 			  }
 		  },
 		  rng_buttons = { "P1 L", "P1 R" },
@@ -129,43 +117,37 @@ function clean_empty(array)
   |..|.......B....|............|
   |..|............|............|
   |..|.......B....|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
-  |..|............|............|
   ]])
+	  },
+	  {
+		  name = "Rain dance",
+		  allow_empty_input = false,
+		  allow_more_than_one_button = true,
+		  watchers = {
+			  {
+				  address = 0x005A,
+				  data_type = "ushort",
+				  name = "camera_xy",
+				  win = nil,
+				  reset = function(value) return not (value == 0x8101) end
+			  },
+			  {
+				  address = 0x4EB3,
+				  data_type = "ushort",
+				  name = "boy_hp",
+				  win = nil,
+				  reset = function(value) return value <= 20 end
+			  },
+			  {
+				  address = 0x3378,
+				  data_type = "ushort",
+				  name = "crash_rng",
+				  win = function(value) return value == 0x005A end,
+				  reset = function(value) return not (value == 0) end
+			  }
+		  },
+		  rng_buttons = { "P1 Down", "P1 Left", "P1 Right" },
+		  inputs = nil
 	  }
   }
   function nextState()
@@ -200,7 +182,7 @@ function clean_empty(array)
 	  random_button = SETTINGS.rng_buttons[math.random(#SETTINGS.rng_buttons)]
 	  --print("random input=" .. random_button)
   
-	  local buttons = joypad.get()
+	  local buttons = {}
 	  for i = 1, #SETTINGS.rng_buttons do
 		  local button = SETTINGS.rng_buttons[i]
 		  buttons[button] = set_rng_buttons(button, random_button)
@@ -211,6 +193,7 @@ function clean_empty(array)
   end
   function progress_inputs()
 	  if STATE.input_index > #SETTINGS.inputs then
+		  STATE.win = true
 		  return
 	  end
   
@@ -236,13 +219,13 @@ function clean_empty(array)
 		  if watcher.win ~= nil then
 			  STATE.win = STATE.win or watcher.win(value)
 			  if watcher.win(value) then
-				  --print(string.format("WATCHER: %s = %04X", watcher.name, value))
+				  --print(string.format("YAY: %s = %04X", watcher.name, value))
 			  end
 		  end
 		  if watcher.reset ~= nil then
 			  STATE.reset = STATE.reset or watcher.reset(value)
 			  if watcher.reset(value) then
-				  --print(string.format("WATCHER: %s = %04X", watcher.name, value))
+				  --print(string.format("NEY: %s = %04X", watcher.name, value))
 			  end
 		  end
 	  end
