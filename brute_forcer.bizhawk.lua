@@ -37,13 +37,17 @@ function clean_empty(array)
 	  current_frame = 0,
 	  best_result = -1,
 	  base_save_slot = 5,
-	  save_slot = 5
+	  save_slot = 5,
+	  settings = -1
   }
   RESULT = {}
   
   -- config
+  RNG_BYTES = { 0x0133, 0x0134, 0x0135, 0x0136, 0x0137, 0x0138, 0x0139, 0x013A }
+  
   SETTING_SETS = {
 	  {
+		  name = "Camera Setup",
 		  allow_empty_input = false,
 		  allow_more_than_one_button = true,
 		  rng_buttons = { "P1 Up", "P1 Left", "P1 Right" }, -- , "P1 Down"
@@ -65,6 +69,7 @@ function clean_empty(array)
 		  },
 	  },
 	  {
+		  name = "Crash RNG Setup",
 		  allow_empty_input = false,
 		  allow_more_than_one_button = false,
 		  rng_buttons = nil,
@@ -75,10 +80,17 @@ function clean_empty(array)
 				  name = "crash_rng",
 				  win = function(value) return value == 0x005A end,
 				  reset = function(value) return not (value == 0) end
+			  },
+			  {
+				  address = 0x4EB3,
+				  data_type = "ushort",
+				  name = "boy_hp",
+				  win = nil,
+				  reset = function(value) return value <= 20 end
 			  }
 		  },
 		  inputs = split_inputs([[
-  |..|........X...|............|
+  |..|......Y.....|............|
   |..|............|............|
   |..|............|............|
   |..|............|............|
@@ -147,9 +159,22 @@ function clean_empty(array)
   ]])
 	  },
   }
-  SETTINGS = SETTING_SETS[1]
+  function nextState()
+	  STATE.win = false
+	  STATE.reset = false
+	  STATE.input_index = 1
   
-  RNG_BYTES = { 0x0133, 0x0134, 0x0135, 0x0136, 0x0137, 0x0138, 0x0139, 0x013A }
+	  if STATE.settings == -1 then
+		  STATE.settings = 1
+		  SETTINGS = SETTING_SETS[STATE.settings]
+	  elseif not (SETTINGS[STATE.settings + 1] ~= nil) then
+		  STATE.settings = STATE.settings + 1
+		  SETTINGS = SETTING_SETS[STATE.settings]
+	  end
+	  
+	  --print("state="..STATE.settings.."\n - "..SETTINGS.name.."\n - #wachers="..#SETTINGS.watchers)
+  end
+  nextState()
   
   function set_rng_buttons(button, random_button)
 	  if random_button == "/wait" then
@@ -173,6 +198,24 @@ function clean_empty(array)
 	  
 	  --print(joypad.get())
   end
+  function progress_inputs()
+	  if STATE.input_index > #SETTINGS.inputs then
+		  return
+	  end
+  
+	  local buttons = SETTINGS.inputs[STATE.input_index]
+	  --print(STATE.input_index.."/"..#SETTINGS.inputs.." = "..buttons)
+	  STATE.input_index = STATE.input_index + 1
+	  
+	  joypad.setfrommnemonicstr(buttons)	
+  end
+  function progress()
+	  if not (SETTINGS.rng_buttons == nil) then
+		  progress_rng()
+	  else
+		  progress_inputs()
+	  end
+  end
   
   function check_cond()
 	  for _, watcher in pairs(SETTINGS.watchers) do
@@ -181,11 +224,18 @@ function clean_empty(array)
 		  --print(watcher.name .. "=" .. value)
 		  if watcher.win ~= nil then
 			  STATE.win = STATE.win or watcher.win(value)
+			  if watcher.win(value) then
+				  print(string.format("WATCHER: %s = %04X", watcher.name, value))
+			  end
 		  end
 		  if watcher.reset ~= nil then
 			  STATE.reset = STATE.reset or watcher.reset(value)
+			  if watcher.reset(value) then
+				  print(string.format("WATCHER: %s = %04X", watcher.name, value))
+			  end
 		  end
 	  end
+	  
 	  
 	  return STATE.win, STATE.reset
   end
@@ -201,7 +251,8 @@ function clean_empty(array)
   end
   
   -- Sets up the save states
-  savestate.loadslot(4);
+  savestate.loadslot(5);
+  --savestate.saveslot(5);
   --client.unpause()
   tastudio.setrecording(true);
   
@@ -246,11 +297,14 @@ function clean_empty(array)
 	  end
   end
   function rewind()
+	  STATE.settings = -1
 	  STATE.count = STATE.count + 1
 	  STATE.current_frame = 0
 	  
 	  STATE.win = null
 	  STATE.reset = null
+	  
+	  nextState()
 	  
 	  savestate.loadslot(5)
   end
@@ -258,7 +312,7 @@ function clean_empty(array)
 	  --print("do sth.")
 	  renderOverlay()
 	  
-	  progress_rng()
+	  progress()
 	  advance_frames(1)
 	  
 	  local win, reset = check_cond()
@@ -266,7 +320,7 @@ function clean_empty(array)
 	  if win then
 		  --print("yay")
 		  updateBest()
-		  rewind()
+		  nextState()
 	  elseif reset then
 		  --print("ney")
 		  rewind()
