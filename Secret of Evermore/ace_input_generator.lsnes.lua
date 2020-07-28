@@ -125,11 +125,14 @@ local function send_sta(dest)
 	table.insert(inputs, toBits({sta, d_2, d_1, nop, nop, wai, bra, 0xF8}))
 end
 
-local function send_sta_rts(dest)
-	local d_1 = bit.lrshift(dest, 8)
-	local d_2 = bit.band(dest, 0xFF)
+local function send_sta_sta_rts(dest1, dest2)
+	local d_1 = bit.lrshift(dest1, 8)
+	local d_2 = bit.band(dest1, 0xFF)
 	
-	table.insert(inputs, toBits({sta, d_2, d_1, nop, nop, wai, bra, 0xF8}))
+	local d_3 = bit.lrshift(dest2, 8)
+	local d_4 = bit.band(dest2, 0xFF)
+	
+	table.insert(inputs, toBits({sta, d_2, d_1, sta, d_4, d_3, wai, rts}))
 end
 
 local function send_sta91(dest)
@@ -176,10 +179,7 @@ local function gen_input()
 	
 	send_lda(0x000F)
 	send_sta(0x4F53) --dog_y
-	send_sta(0x3365) --clear_crashing_alchemy ($3364-$337C)
-	send_sta(0x3377)
-	
-	set_frame(rts) --exit_crashing_alchemy
+	send_sta_sta_rts(0x3365, 0x3377) --clear_crashing_alchemy ($3364-$337C)
 end
 
 local function gen_input_test()
