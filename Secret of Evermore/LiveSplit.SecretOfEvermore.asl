@@ -16,7 +16,8 @@ state("higan"){}
 state("bsnes"){}
 state("snes9x"){}
 state("snes9x-x64"){}
-state("emuhawk"){}
+state("emuhawk"){} // BSNES core
+state("lsnes-bsnes"){}
 
 startup
 {
@@ -48,6 +49,7 @@ startup
 	AddOptionalSplit ("raptors", "Raptors", "Split on leaving the map", false);
 	AddSplit ("thraxx", "Thraxx", "Split on leaving the room");
 	AddOptionalSplit ("graveyard", "Graveyard", "Split on victory hymn", false);
+	AddOptionalSplit ("salabog", "Salabog", "Split on victory hymn", false);
 	AddOptionalSplit ("volcano", "Enter Volcano", "Split on entering the map", false);
 	AddSplit ("magmar", "Magmar", "Split on victory hymn");
 	
@@ -71,11 +73,14 @@ startup
 	AddSplit("mungola", "Mungola", "Split on victory hymn");
 	AddOptionalSplit("glassFight", "Glass Fight", "Split on victory hymn", false);
 	AddOptionalSplit("windwalker", "Windwalker", "Split on leaving the screen", false);
+	AddOptionalSplit("tiny", "Tiny", "Split on victory hymn", false);
+	AddOptionalSplit("coleoptera", "Coleoptera", "Split on leaving the room", false);
 	AddSplit("gauge", "Gauge #1", "Split on landing the Wind Walker");
 	AddSplit("rocket", "Rocket", "Split on leaving the screen");
 	
 	AddAct(4, "Omnitopia");
 	AddOptionalSplit("professor", "Professor", "Split on entering the map", false);
+	AddOptionalSplit("face", "Face", "Split on victory hymn", false);
 	AddOptionalSplit("saturn", "Saturn Skip", "Split on entering the boss rush room", false);
 	AddSplit("carltron", "Carltron's Robot", "Split on xp gain (The boy can still be controlled)");
 }
@@ -86,10 +91,20 @@ init
 	
 	IntPtr memoryOffset = IntPtr.Zero;
 	
-	if (memory.ProcessName.ToLower().Contains("snes9x")
+	Action<long, int> InitMemoryOffset = (address, indirect) => {
+		if(indirect > 0) {
+			memoryOffset = memory.ReadPointer((IntPtr)address);
+		} else {
+			memoryOffset = (IntPtr)address;
+		}
+	};
+	
+	if (memory.ProcessName.ToLower().Contains("emuhawk")) {
+		InitMemoryOffset(0x36F11500240, 0);
+	} else if (memory.ProcessName.ToLower().Contains("snes9x")
 		|| memory.ProcessName.ToLower().Contains("higan")
 		|| memory.ProcessName.ToLower().Contains("bsnes")
-		|| memory.ProcessName.ToLower().Contains("emuhawk")) {
+		|| memory.ProcessName.ToLower().Contains("lsnes")) {
 		var versions = new Dictionary<int, Tuple<long, int>>{
 			{ 10330112, new Tuple<long, int>(0x789414, 1) },	 	// snes9x 1.52-rr
 			{ 7729152, new Tuple<long, int>(0x890EE4, 1) },			// snes9x 1.54-rr
@@ -129,26 +144,21 @@ init
 			{ 51924992, new Tuple<long, int>(0xA9DD5C, 0) },		// bsnes v111
 			{ 52056064, new Tuple<long, int>(0xAAED7C, 0) }, 		// bsnes v112
 			{ 9662464, new Tuple<long, int>(0x67dac8, 1) },			// bsnes+ 0.5
-			{ 7061504, new Tuple<long, int>(0x36F11500240, 0) }, 	// BizHawk 2.3
-			{ 7249920, new Tuple<long, int>(0x36F11500240, 0) }, 	// BizHawk 2.3.1
-			{ 6938624, new Tuple<long, int>(0x36F11500240, 0) }, 	// BizHawk 2.3.2
+			{ 35414016, new Tuple<long, int>(0x23A1BF0, 0) }, 		// lsnes rr2-β23
 		};
 
 		Tuple<long, int> emulatorProperties;
 		if (versions.TryGetValue(modules.First().ModuleMemorySize, out emulatorProperties)) {
 			var address = emulatorProperties.Item1;
-			var indirect = emulatorProperties.Item2 > 0;
+			var indirect = emulatorProperties.Item2;
 			
-			if(indirect) {
-				memoryOffset = memory.ReadPointer((IntPtr)address);
-			} else {
-				memoryOffset = (IntPtr)address;
-			}
+			InitMemoryOffset(address, indirect);
 		}
 	}
 
-	if (memoryOffset == IntPtr.Zero)
-		throw new Exception("Memory not yet initialized.");
+	if (memoryOffset == IntPtr.Zero)  {	
+		throw new Exception("Memory not yet initialized. ("+ modules.First().ModuleMemorySize + " not found!)");
+	}
 	
 	vars.watchers = new MemoryWatcherList
 	{
@@ -162,6 +172,8 @@ init
 		new MemoryWatcher<ushort>((IntPtr)memoryOffset + 0x0E4B) { Name = "music" },
 		
 		new MemoryWatcher<ushort>((IntPtr)memoryOffset + 0x0100) { Name = "frame" },
+		
+		new MemoryWatcher<ushort>((IntPtr)memoryOffset + 0x2355) { Name = "windwalker" },
 	};
 }
 
@@ -219,17 +231,18 @@ split
 	Func<byte, bool> Map = (map => vars.watchers["map"].Current == map);
 	Func<byte, byte, bool> MapTransition = ((previousMap, map) => vars.watchers["map"].Current == map && vars.watchers["map"].Old == previousMap);
 	Func<ushort, bool> Music = (music => vars.watchers["music"].Current == music);
-	Func<bool> Hymn = (() => vars.watchers["music"].Current != vars.watchers["music"].Old && vars.watchers["music"].Current == 26);
 	Func<ushort, bool> XReached = (x => vars.watchers["boy_x"].Current > vars.watchers["boy_x"].Old && vars.watchers["boy_x"].Current >= x);
 	Func<ushort, bool> YReached = (y => vars.watchers["boy_y"].Current < vars.watchers["boy_y"].Old && vars.watchers["boy_y"].Current <= y);
 	Func<uint, bool> XpGained = (xp => vars.watchers["boy_xp"].Current > vars.watchers["boy_xp"].Old && ((vars.watchers["boy_xp"].Current - vars.watchers["boy_xp"].Old) >= xp));
+	Func<bool> Windwalker = (() => vars.watchers["windwalker"].Current > 0);
+	Func<bool> Hymn = (() => vars.watchers["music"].Current != vars.watchers["music"].Old && vars.watchers["music"].Current == 26);
 	
-		
 	// Act 1
 	checkSplit("flowers", Map(92) && XReached(234));
-	checkSplit("raptors", MapTransition(92, 81));
-	checkSplit("thraxx", MapTransition(24, 103));
+	checkSplit("raptors", MapTransition(92, 81) || MapTransition(92, 37));
+	checkSplit("thraxx", !Windwalker() && MapTransition(24, 103));
 	checkSplit("graveyard", Map(39) && Hymn());
+	checkSplit("salabog", Map(1) && Hymn());
 	checkSplit("volcano", MapTransition(65, 60));
 	checkSplit("magmar", Map(63) && Hymn());
 	
@@ -253,11 +266,14 @@ split
 	checkSplit("mungola", Map(119) && Hymn());
 	checkSplit("glassFight", MapTransition(16, 20));
 	checkSplit("windwalker", Map(57) && YReached(285));
+	checkSplit("tiny", Map(87) && Hymn());
+	checkSplit("coleoptera", Windwalker() && MapTransition(24, 103));
 	checkSplit("gauge", MapTransition(54, 57));
 	checkSplit("rocket", MapTransition(57, 72));
 	
 	// Act 4
 	checkSplit("professor", MapTransition(72, 70));
+	checkSplit("face", Map(69) && Hymn());
 	checkSplit("saturn", MapTransition(72, 74));
 	checkSplit("carltron", Map(74) && XpGained(100000));
 	
