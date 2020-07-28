@@ -25,7 +25,10 @@ function clean_empty(array)
 	  return inputs
   end
   
-  --BUTTONS = "F.|BYsSudlrAXLR0123|BYsSudlrAXLR0123|BYsSudlrAXLR0123|BYsSudlrAXLR0123"
+  BUTTONS = {
+	  all = "F.|BYsSudlrAXLR0123|BYsSudlrAXLR0123|BYsSudlrAXLR0123|BYsSudlrAXLR0123",
+	  none = "..|................|................|................|................"
+  }
   STATE = {
 	  count = 1,
 	  current_frame = 0,
@@ -53,8 +56,12 @@ function clean_empty(array)
 				  reset = function(value) return value < 0x8104 end
 			  }
 		  },
-		  rng_buttons = "..|....u.lr........|................|................|................",
-		  inputs = nil
+		  buttons = {
+			  always = "..|....u...........|................|................|................",
+			  one = "..|......lr........|................|................|................",
+			  random = "..|................|................|................|................"
+		  },
+		  movie = nil
 	  },
 	  {
 		  name = "Crash Game",
@@ -70,8 +77,8 @@ function clean_empty(array)
 				  reset = function(value) return not (value == 0x8104) end
 			  }
 		  },
-		  rng_buttons = { "P1 L", "P1 R" },
-		  inputs = split_inputs([[
+		  buttons = nil,
+		  movie = split_inputs([[
   ..|.Y..............|................|................|................
   ..|................|................|................|................
   ..|................|................|................|................
@@ -124,14 +131,14 @@ function clean_empty(array)
 				  reset = function(value) return not (value == 0) end
 			  }
 		  },
-		  rng_buttons = nil,
-		  inputs = nil
+		  buttons = nil,
+		  movie = nil
 	  }
   }
   function nextState()
 	  STATE.win = false
 	  STATE.reset = false
-	  STATE.input_index = 1
+	  STATE.movie_index = 1
   
 	  if STATE.settings == -1 then
 		  STATE.settings = 1
@@ -203,15 +210,37 @@ function clean_empty(array)
 		  return button == random_button
 	  end
   end
-  function progress_rng()
-	  random_button = SETTINGS.rng_buttons[math.random(#SETTINGS.rng_buttons)]
-	  --print("random input=" .. random_button)
-	  --TODO: set_rng_buttons(button, random_button
+  function button_value(offset, recommendation)
+	  if recommendation then
+		  return recommendation and 1 or 0
+	  end
 	  
+	  local button = "."
+	  
+	  if not (SETTINGS.buttons.random ~= nil) then
+		  button = string.sub(SETTINGS.buttons.random, offset, offset)
+		  
+		  return (button == "." and 0 or (math.random(2) == 1) and 1 or 0)
+	  end
+	  
+	  if not (SETTINGS.buttons.one ~= nil) then
+		  button = string.sub(SETTINGS.buttons.one, offset, offset)
+		  
+		  return button == "." and 0 or 1
+	  end
+  
+	  if not (SETTINGS.buttons.always ~= nil) then
+		  button = string.sub(SETTINGS.buttons.always, offset, offset)
+		  
+		  return button == "." and 0 or 1
+	  end
+	  
+  end
+  function progress_rng()	
 	  for c=0, 3 do
 		  offset = 4 + 17 * c
 		  for i=0, 15 do
-			  button = string.sub(SETTINGS.rng_buttons, offset+i, offset+i)
+			  button = string.sub(SETTINGS.buttons, offset+i, offset+i)
 			  value = (button == "." and 0 or (math.random(2) == 1) and 1 or 0)
 			  --print("button["..(offset+i).."]="..value)
 			  input.set2(bit.lrshift(c, 1)+1, c%2, i, value)
@@ -220,31 +249,31 @@ function clean_empty(array)
 	  
 	  --print(joypad.get())
   end
-  function progress_inputs()
-	  if STATE.input_index > #SETTINGS.inputs then
+  function progress_movie()
+	  if STATE.movie_index > #SETTINGS.movie then
 		  STATE.win = true
 		  return
 	  end
   
-	  local buttons = SETTINGS.inputs[STATE.input_index]
-	  --print(STATE.input_index.."/"..#SETTINGS.inputs.." = "..buttons)
-	  STATE.input_index = STATE.input_index + 1
+	  local buttons = SETTINGS.movie[STATE.movie_index]
+	  --print(STATE.movie_index.."/"..#SETTINGS.movie.." = "..buttons)
+	  STATE.movie_index = STATE.movie_index + 1
 	  
 	  for c=0, 3 do
-		  offset = 4 + 17 * c
+		  local offset = 4 + 17 * c
 		  for i=0, 15 do
 			  button = string.sub(buttons, offset+i, offset+i)
-			  value = (button == "." and 0 or 1)
+			  value = button == "." and 0 or 1
 			  --print("button["..(offset+i).."]="..value)
-			  input.set2(bit.lrshift(c, 1)+1, c%2, i, value)
+			  input.set2(bit.lrshift(c, 1)+1, c%2, i, button_value(offset+i, value))
 		  end
 	  end
   end
   function on_input()
 	  --print("on_input")
 	  
-	  if not (SETTINGS.inputs == nil) then
-		  progress_inputs()
+	  if not (SETTINGS.movie == nil) then
+		  progress_movie()
 	  elseif not (SETTINGS.rng_buttons == nil) then
 		  progress_rng()
 	  else
@@ -252,6 +281,24 @@ function clean_empty(array)
 			  for i=0, 15 do
 				  input.set2(bit.lrshift(c, 1)+1, c%2, i, 0)
 			  end
+		  end
+	  end
+	  
+	  local buttons = { -- TODO
+		  movie = string.sub(SETTINGS.movie[STATE.movie_index], offset+i, offset+i),
+		  always = SETTINGS.buttons.always,
+		  one = SETTINGS.buttons.one,
+		  random = SETTINGS.buttons.random
+	  }
+	  
+	  for c=0, 3 do
+		  local offset = 4 + 17 * c
+		  for i=0, 15 do
+			  
+			  
+			  value = button == "." and 0 or 1
+			  --print("button["..(offset+i).."]="..value)
+			  input.set2(bit.lrshift(c, 1)+1, c%2, i, button_value(offset+i, value))
 		  end
 	  end
   end
