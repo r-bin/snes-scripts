@@ -6,23 +6,29 @@ STATE = {
 	current_frame = 0,
 	best_result = -1
 }
+RESULT = {}
 
 -- config
-SETTINGS = {
-	allow_empty_input = true,
-	allow_more_than_one_button = false,
+SETTING_SETS = {
+	{
+		allow_empty_input = true,
+		allow_more_than_one_button = false,
+	}
 }
+SETTINGS = SETTING_SETS[0]
+
+RNG_BYTES = { 0x0133, 0x0134, 0x0135, 0x0136, 0x0137, 0x0138, 0x0139, 0x013A }
+
 --RNG_BUTTONS = { "U", "D", "L", "R", "B" }
 RNG_BUTTONS = { "P1 Up", "P1 Down", "P1 Left", "P1 Right", "P1 B" } --, "/wait", "/end"
 MEMORY_WATCHER = {
 	{
 		address = 0x2210,
 		name = "boy_firstLetter",
-		win = function(value) return value == 100 end,
+		win = function(value) return value == string.byte("p") end,
 		reset = function(value) return not (value == 0) end
 	}
 }
-
 
 function set_rng_buttons(button, random_button)
 	if random_button == "/wait" then
@@ -93,11 +99,27 @@ function renderOverlay()
     end
 end
 
+function rng_string()
+	local rng_bytes = {}
+
+	for i = 1, #RNG_BYTES do
+		local value = mainmemory.readbyte(RNG_BYTES[i])
+		
+		rng_bytes[i] = string.format("%02X", value)
+    end
+	
+	return table.concat(rng_bytes, ",")
+end
 function updateBest()
 	if STATE.current_frame < STATE.best_result or STATE.best_result == -1 then
 		STATE.best_result = STATE.current_frame
 		
-		print("New record! "..STATE.best_result)
+		RESULT = {
+			frames = STATE.best_result,
+			RNG_BYTES = rng_string()
+		}
+		
+		print("New record!\n  - "..STATE.best_result.." frames\n  - "..rng_string())
 		savestate.saveslot(6)
 	end
 end
