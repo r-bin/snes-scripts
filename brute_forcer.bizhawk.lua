@@ -48,9 +48,8 @@ function clean_empty(array)
   SETTING_SETS = {
 	  {
 		  name = "Camera Setup",
-		  allow_empty_input = false,
+		  allow_empty_input = true,
 		  allow_more_than_one_button = true,
-		  rng_buttons = { "P1 Up", "P1 Left", "P1 Right" }, -- , "P1 Down"
 		  watchers = {
 			  {
 				  address = 0x005A,
@@ -67,6 +66,8 @@ function clean_empty(array)
 				  reset = function(value) return value <= 20 end
 			  }
 		  },
+		  rng_buttons = { "P1 Up", "P1 Left", "P1 Right" }, -- , "P1 Down"
+		  inputs = nil
 	  },
 	  {
 		  name = "Crash RNG Setup",
@@ -75,11 +76,11 @@ function clean_empty(array)
 		  rng_buttons = nil,
 		  watchers = {
 			  {
-				  address = 0x3378,
+				  address = 0x005A,
 				  data_type = "ushort",
-				  name = "crash_rng",
-				  win = function(value) return value == 0x005A end,
-				  reset = function(value) return not (value == 0) end
+				  name = "camera_xy",
+				  win = nil,
+				  reset = function(value) return value < 0x8101 end
 			  },
 			  {
 				  address = 0x4EB3,
@@ -87,8 +88,16 @@ function clean_empty(array)
 				  name = "boy_hp",
 				  win = nil,
 				  reset = function(value) return value <= 20 end
+			  },
+			  {
+				  address = 0x3378,
+				  data_type = "ushort",
+				  name = "crash_rng",
+				  win = function(value) return value == 0x005A end,
+				  reset = function(value) return not (value == 0) end
 			  }
 		  },
+		  rng_buttons = { "P1 L", "P1 R" },
 		  inputs = split_inputs([[
   |..|......Y.....|............|
   |..|............|............|
@@ -157,7 +166,7 @@ function clean_empty(array)
   |..|............|............|
   |..|............|............|
   ]])
-	  },
+	  }
   }
   function nextState()
 	  STATE.win = false
@@ -167,9 +176,11 @@ function clean_empty(array)
 	  if STATE.settings == -1 then
 		  STATE.settings = 1
 		  SETTINGS = SETTING_SETS[STATE.settings]
-	  elseif not (SETTINGS[STATE.settings + 1] ~= nil) then
+	  elseif STATE.settings + 1 <= #SETTING_SETS then
 		  STATE.settings = STATE.settings + 1
 		  SETTINGS = SETTING_SETS[STATE.settings]
+	  else
+		  finish()
 	  end
 	  
 	  --print("state="..STATE.settings.."\n - "..SETTINGS.name.."\n - #wachers="..#SETTINGS.watchers)
@@ -210,7 +221,7 @@ function clean_empty(array)
 	  joypad.setfrommnemonicstr(buttons)	
   end
   function progress()
-	  if not (SETTINGS.rng_buttons == nil) then
+	  if (SETTINGS.inputs == nil) then
 		  progress_rng()
 	  else
 		  progress_inputs()
@@ -225,13 +236,13 @@ function clean_empty(array)
 		  if watcher.win ~= nil then
 			  STATE.win = STATE.win or watcher.win(value)
 			  if watcher.win(value) then
-				  print(string.format("WATCHER: %s = %04X", watcher.name, value))
+				  --print(string.format("WATCHER: %s = %04X", watcher.name, value))
 			  end
 		  end
 		  if watcher.reset ~= nil then
 			  STATE.reset = STATE.reset or watcher.reset(value)
 			  if watcher.reset(value) then
-				  print(string.format("WATCHER: %s = %04X", watcher.name, value))
+				  --print(string.format("WATCHER: %s = %04X", watcher.name, value))
 			  end
 		  end
 	  end
@@ -263,8 +274,9 @@ function clean_empty(array)
 	  gui.drawText(5,5,string.format("COUNT:   %d", STATE.count));
 	  gui.drawText(5,20,string.format("FRAME:   %d", STATE.current_frame));
 	  gui.drawText(5,35,string.format("BEST:    %d", STATE.best_result));
+	  gui.drawText(5,55,string.format("STATE:   [%d] %s", STATE.settings, SETTINGS.name));
 	  for i = 1, #SETTINGS.watchers do
-		  gui.drawText(5,35 + i*15,
+		  gui.drawText(5, 60 + i*15,
 			  string.format("WATCHER: %s = %04X",
 				  SETTINGS.watchers[i].name,
 				  mainmemory.read_u16_le(SETTINGS.watchers[i].address)
@@ -284,15 +296,17 @@ function clean_empty(array)
 	  return table.concat(rng_bytes, ",")
   end
   function updateBest()
+	  RESULT = {
+		  frames = STATE.current_frame,
+		  RNG_BYTES = rng_string()
+	  }
+	  
+	  print("Success!\n  - "..STATE.current_frame.." frames\n  - "..rng_string())
+		  
 	  if STATE.current_frame < STATE.best_result or STATE.best_result == -1 then
 		  STATE.best_result = STATE.current_frame
 		  
-		  RESULT = {
-			  frames = STATE.best_result,
-			  RNG_BYTES = rng_string()
-		  }
-		  
-		  print("New record!\n  - "..STATE.best_result.." frames\n  - "..rng_string())
+		  print("New record!")
 		  savestate.saveslot(6)
 	  end
   end
@@ -308,6 +322,11 @@ function clean_empty(array)
 	  
 	  savestate.loadslot(5)
   end
+  function finish()
+	  updateBest()
+	  
+	  rewind()
+  end
   while true do
 	  --print("do sth.")
 	  renderOverlay()
@@ -319,7 +338,6 @@ function clean_empty(array)
 	  --print("win="..tostring(win)..", reset="..tostring(reset))
 	  if win then
 		  --print("yay")
-		  updateBest()
 		  nextState()
 	  elseif reset then
 		  --print("ney")
