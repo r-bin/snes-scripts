@@ -66,7 +66,7 @@ local function toBits(input_array)
 	return controllers
 end
 
-local start = 84303+2 -- 0x014218+1
+local start = 35814 - 1 -- offset + 0x010000 + 0x4218 + 2 (frame points at controller2)
 local inputs = {}
 
 local stop = 0xDB
@@ -106,28 +106,18 @@ local function send_sta(dest)
 	table.insert(inputs, toBits({sta, d_2, d_1, nop, nop, wai, bra, 0xF8}))
 end
 
-local function send_cpx(value)
-	local v_1 = bit.lrshift(value, 8)
-	local v_2 = bit.band(value, 0xFF)
-	
-	table.insert(inputs, toBits({0xEC, v_2, v_1, nop, nop, wai, bra, 0xF8}))
-end
-
-local function send_cpx_rts(value)
-	local v_1 = bit.lrshift(value, 8)
-	local v_2 = bit.band(value, 0xFF)
-	
-	table.insert(inputs, toBits({0xEC, v_2, v_1, 0x60, nop, nop, nop, nop}))
-end
-
 local function gen_input()
 	send_nop()
-
+	
+	send_lda(0x0015)
+	send_sta(0x4F53) --dog_y
+	
 	send_lda(0xFFFF)
-	send_sta(0x22EB)
+	send_sta(0x22EB) --credit_active
+	send_sta(0x22F1)
 	
 	send_lda(0x0000)
-	send_sta(0x3364)
+	send_sta(0x3364) --clear_crashing_alchemy ($3364-$337C)
 	send_sta(0x3366)
 	send_sta(0x3368)
 	send_sta(0x336A)
@@ -141,9 +131,7 @@ local function gen_input()
 	send_sta(0x3379)
 	send_sta(0x337B)
 	
-	--send_cpx(0x8100)
-	set_frame(0x60)
-	--send_cpx_rts(0x8100)
+	set_frame(0x60) --exit_crashing_alchemy
 end
 
 gen_input()
