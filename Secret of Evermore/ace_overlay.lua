@@ -4,23 +4,23 @@ local bg_color = 0x00000000
 local x_padding = 0
 local y_padding = 0
 
-local screen = {
+local SCREEN = {
 	x = 0,
 	y = 0,
 	width = 256 * 2,
 	height = 224 * 2
 }
-local box = {
-	x = screen.width,
+local RIGHT = {
+	x = SCREEN.width,
 	y = 0,
 	width = 142,
-	height = screen.height
+	height = SCREEN.height
 }
-local quest = {
-	x = -box.width,
+local LEFT = {
+	x = -RIGHT.width,
 	y = 0,
-	width = box.width,
-	height = screen.height
+	width = RIGHT.width,
+	height = SCREEN.height
 }
 
 local function trans(color)
@@ -44,7 +44,7 @@ function memoryRect(start, size, amount, rows, offset, active, text, color, text
 		--print(memory)
 		
 		local element = {
-			width = math.floor(box.width / rows),
+			width = math.floor(RIGHT.width / rows),
 			height = 20
 		}
 		local offset = {
@@ -52,43 +52,46 @@ function memoryRect(start, size, amount, rows, offset, active, text, color, text
 			y = offset + column * element.height
 		}
 		if rows > 1 and row == (rows-1) then
-			element.width = box.width - element.width * (rows-1)
+			element.width = RIGHT.width - element.width * (rows-1)
 		end
 		
 		--print("row="..row.."/colum="..column..", element="..element.width.."/"..element.height..", offset="..offset.x.."/"..offset.y)
 		
 		local is_active = active(memory)
 		
-		gui.solidrectangle(box.x + offset.x, box.y + offset.y, element.width, element.height, color(is_active))
-		gui.rectangle(box.x + offset.x, box.y + offset.y, element.width, element.height, 1, text_color(is_active))
-		gui.text(box.x + offset.x, box.y + offset.y, text(memory), text_color(is_active))
+		gui.solidrectangle(RIGHT.x + offset.x, RIGHT.y + offset.y, element.width, element.height, color(is_active))
+		gui.rectangle(RIGHT.x + offset.x, RIGHT.y + offset.y, element.width, element.height, 1, text_color(is_active))
+		gui.text(RIGHT.x + offset.x, RIGHT.y + offset.y, text(memory), text_color(is_active))
 	end
 end
 function draw_box()
-	gui.right_gap(box.width)
+	gui.right_gap(RIGHT.width)
 	
-	gui.solidrectangle(box.x, box.y, box.width, box.height, 0x00DDDDDD)
+	gui.solidrectangle(RIGHT.x, RIGHT.y, RIGHT.width, RIGHT.height, 0x00DDDDDD)
 	
-	memoryRect(0x3294, 0x1A, 8, 4, 0,
+	local offset = 23
+	
+	gui.text(RIGHT.x + 2, LEFT.y + 5, "Alchemy Memory", 0x00000000)
+	memoryRect(0x3294, 0x1A, 8, 4, 0 + offset,
 		function(memory) return memory[24] == 1 end,
 		function(memory) return string.format(" %02X", memory[24]) end,
 		function(active) return active and 0x00FF5555 or 0xDDFF0000 end,
 		function(active) return 0x00000000 end
 	)
-	memoryRect(0x3364, 0x40, 8, 1, 40,
+	memoryRect(0x3364, 0x40, 8, 1, 40 + offset,
 		function(memory) return memory[16] == 0 end,
 		function(memory) return string.format("     %02X%02X", memory[17], memory[16]) end,
 		function(active) return active and 0xDD00FF00 or 0x0033FF33 end,
 		function(active) return 0x00000000 end
 	)
-	memoryRect(0x3364, 0x1A, 1, 4, 40,
+	memoryRect(0x3364, 0x1A, 1, 4, 40 + offset,
 		function(memory) return memory[24] == 1 end,
 		function(memory) return string.format(" %02X", memory[24]) end,
 		function(active) return active and 0x00FF5555 or 0xFF000000 end,
 		function(active) return active and 0x00000000 or 0xFF000000 end
 	)
 	
-	memoryRect(0x3564, 0x76, 8, 1, 220,
+	memoryRect(0x3564, 0x76, 8, 1, 220 + offset,
 		function(memory) return memory[20] == 0 end,
 		function(memory) return string.format("       %02X%02X", memory[20], memory[21]) end,
 		function(active) return active and 0xDD3333FF or 0x005555FF end,
@@ -102,7 +105,7 @@ SWAP = {
 }
 STATE = {
 	uninitialized = false,
-	human_readable = true
+	human_readable = false
 }
 
 BEAUTIFY = {
@@ -162,52 +165,80 @@ function get_active_char()
 	
 	return SWAP.active_char
 end
+function get_projectile_count()
+	local count = 0
+	local value = nil
+	
+	for i=0, 15 do
+		local value = memory2.WRAM:byte(0x3294 + i*0x1A + 24)
+		
+		if value == 1 then
+			count = count + 1
+		else
+			return count
+		end
+	end
+	
+	return count
+end
 function draw_quest()
+	local highlight_color = 0x00FF0000
 	local line_height = 18
 	local curser = 0
-	local function add_text(line)
-		gui.text(quest.x + 2, quest.y + 5 + (curser * line_height), line, 0x00000000)
+	local function add_text(line, color)
+		gui.text(LEFT.x + 2, LEFT.y + 5 + (curser * line_height), line, color or 0x00000000)
 		curser = curser + 1
 	end
 	local function add_box(line_count)
-		gui.solidrectangle(quest.x, quest.y + 5 + (curser * line_height), quest.width, line_count * line_height, 0x00FFFFFF)
-		gui.rectangle(quest.x, quest.y + 5 + (curser * line_height), quest.width, line_count * line_height, 1, 0x00000000)
+		gui.solidrectangle(LEFT.x, LEFT.y + 5 + (curser * line_height), LEFT.width, line_count * line_height, 0x00FFFFFF)
+		gui.rectangle(LEFT.x, LEFT.y + 5 + (curser * line_height), LEFT.width, line_count * line_height, 1, 0x00000000)
 	end
 
-	gui.left_gap(quest.width)
-	gui.solidrectangle(quest.x, quest.y, quest.width, quest.height, 0x00DDDDDD)
+	gui.left_gap(LEFT.width)
+	gui.solidrectangle(LEFT.x, LEFT.y, LEFT.width, LEFT.height, 0x00DDDDDD)
 	
 	
-	add_text("Misc")
-	add_box(5)
-	add_text(string.format("Char:    %s (%02d)", get_active_char(), SWAP.count))
-	add_text(string.format("Camera: %s/%s", BEAUTIFY.word(0x0059), BEAUTIFY.word(0x005B)))
-	add_text(string.format("Boy:    %s/%s", BEAUTIFY.word(0x4EA3), BEAUTIFY.word(0x4EA5)))
-	add_text(string.format("Dog:    %s/%s", BEAUTIFY.word(0x4F51), BEAUTIFY.word(0x4F53)))
-	add_text(string.format("Frame:  0%s", BEAUTIFY.dword(0x0100)))
+	add_text("General")
+	add_box(6)
+	add_text(string.format("Active:  %s (%02d)", get_active_char(), SWAP.count))
+	add_text(string.format("Boy:    %s|%s", BEAUTIFY.word(0x4EA3), BEAUTIFY.word(0x4EA5)))
+	add_text(string.format("Dog:    %s|%s", BEAUTIFY.word(0x4F51), BEAUTIFY.word(0x4F53)), highlight_color)
+	add_text(string.format("Cam:    %s|%s", BEAUTIFY.word(0x0059), BEAUTIFY.word(0x005B)), highlight_color)
+	add_text(string.format("Frame:   %s", BEAUTIFY.dword(0x0100)))
+	add_text(string.format("Extra Drop #:  %s", BEAUTIFY.byte(0x2461)))
 	
 	add_text("")
 	add_text("Quest")
-	add_box(5)
+	add_box(6)
 	add_text(string.format("Clay:       %s/%02d", BEAUTIFY.byte(0x230F), 9))
 	add_text(string.format("Crystals:   %s/%02d", BEAUTIFY.byte(0x230E), 9))
-	add_text(string.format("Formula:    %02X/%02X", memory2.WRAM:byte(0x0ADA), 0x22))
-	add_text(string.format("Credit #1:  %02X/%02X", memory2.WRAM:byte(0x22EB), 0xFF))
-	add_text(string.format("Credit #2:  %02X/%02X", memory2.WRAM:byte(0x22F1), 0xFF))
+	add_text(string.format("Formula #1: %02X/%02X", memory2.WRAM:byte(0x0ADA), 0x22))
+	add_text(string.format("Projectiles:%02X/%02X", get_projectile_count(), 9))
+	add_text(string.format("Credit #1:  %02X/%02X", memory2.WRAM:byte(0x22F1), 0xFF), highlight_color)
+	add_text(string.format("Credit #2:  %02X/%02X", memory2.WRAM:byte(0x22EB), 0xFF), highlight_color)
 	
 	add_text("")
-	add_text("ACE")
+	add_text("ACE", highlight_color)
 	add_box(3)
-	add_text(string.format("Crash:  %04X/%04X", memory2.WRAM:word(0x3378), 0x005A))
-	add_text(string.format("Cam XY: %04X/%04X", memory2.WRAM:word(0x005A), 0x8104))
-	add_text(string.format("Joy #1: %04X/%04X", memory2.WRAM:word(0x0104), 0x421A))
+	add_text(string.format("Crash:  %04X/%04X", memory2.WRAM:word(0x3378), 0x005A), highlight_color)
+	add_text(string.format("Cam YX: %04X/%04X", memory2.WRAM:word(0x005A), 0x8104), highlight_color)
+	add_text(string.format("Joy #1: %04X/%04X", memory2.WRAM:word(0x0104), 0x421A), highlight_color)
 end
+
+
+function split(s, delimiter)
+    result = {};
+    for match in (s..delimiter):gmatch("(.-)"..delimiter) do
+        table.insert(result, match);
+    end
+    return result;
+end
+
 function on_paint(sync)
 	
 	--print("on_paint("..tostring(sync)..")")
 	
-	--gui.solidrectangle(screen.x, screen.y, screen.width, screen.height, 0x00FF0000)
+	--gui.solidrectangle(SCREEN.x, SCREEN.y, SCREEN.width, SCREEN.height, 0x00FF0000)
 	draw_box()
 	draw_quest()
 end
-
