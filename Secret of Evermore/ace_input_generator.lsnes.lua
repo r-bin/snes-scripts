@@ -19,10 +19,9 @@ end
 
 function on_paint(sync)
 	ports = string.format(
-				"4016: %02X\n" ..
-				"4017: %02X\n" ..
-				
-				"4213: %02X\n" ..
+				"0x913378: %04X\n" ..
+				"0x91005A: %04X\n" ..
+				"0x910100: %04X\n" ..
 				
 				"4218: %02X\n" ..
 				"4219: %02X\n" ..
@@ -33,10 +32,9 @@ function on_paint(sync)
 				"421E: %02X\n" ..
 				"421F: %02X", 
 				
-				memory2.BUS:read(0x4016), 
-				memory2.BUS:read(0x4017), 
-				
-				memory2.BUS:read(0x4213), 
+				memory2.BUS:read(0x913378, 0x913379), 
+				memory2.BUS:read(0x91005A, 0x91005B), 
+				memory2.BUS:read(0x910100, 0x910101), 
 				
 				memory2.BUS:read(0x4218), 
 				memory2.BUS:read(0x4219), 
@@ -68,13 +66,17 @@ local function toBits(input_array)
 	return controllers
 end
 
---local start = 6418
-local start = 8321
+local start = 84303+2 -- 0x014218+1
 local inputs = {}
 
 local stop = 0xDB
 local nop = 0xEA
 local wai = 0xCB
+local ldx = 0xA2
+local stx = 0x8E
+local lda = 0xA9
+local sta = 0x8D
+local bra = 0x80
 
 local function set_frame(i)
 	table.insert(inputs, toBits({i, i, i, i, i, i, i, i}))
@@ -86,52 +88,70 @@ local function gen_id_frames(count)
 	end
 end
 
-local function ldx_stx(value, dest)
+local function send_nop()
+	table.insert(inputs, toBits({nop, nop, nop, nop, nop, wai, bra, 0xF8}))
+end
+
+local function send_lda(value)
+	local v_1 = bit.lrshift(value, 8)
+	local v_2 = bit.band(value, 0xFF)
+	
+	table.insert(inputs, toBits({lda, v_2, v_1, nop, nop, wai, bra, 0xF8}))
+end
+
+local function send_sta(dest)
 	local d_1 = bit.lrshift(dest, 8)
 	local d_2 = bit.band(dest, 0xFF)
 	
-	local v_1 = bit.lrshift(value, 8)
-	local v_2 = bit.band(value, 0xFF)
-	
-	table.insert(inputs, toBits({0xA2, v_2, v_1, 0x8D, 0x0B, 0x42, 0x80, 0xF8}))  -- executed frame
-	set_frame(nop)
-	set_frame(nop)
-	table.insert(inputs, toBits({0x8E, d_2, d_1, 0x8D, 0x0B, 0x42, 0x80, 0xF8}))  -- executed frame
-	set_frame(nop)
-	set_frame(nop)
+	table.insert(inputs, toBits({sta, d_2, d_1, nop, nop, wai, bra, 0xF8}))
 end
 
-local function lda_sta(value, dest)
-	local d_2 = bit.band(dest, 0xFF)
-	
+local function send_cpx(value)
 	local v_1 = bit.lrshift(value, 8)
 	local v_2 = bit.band(value, 0xFF)
 	
-	table.insert(inputs, toBits({0xA9, v_2, v_1, 0x85, d_2, 0xCB, 0x80, 0xF8}))
+	table.insert(inputs, toBits({0xEC, v_2, v_1, nop, nop, wai, bra, 0xF8}))
+end
+
+local function send_cpx_rts(value)
+	local v_1 = bit.lrshift(value, 8)
+	local v_2 = bit.band(value, 0xFF)
+	
+	table.insert(inputs, toBits({0xEC, v_2, v_1, 0x60, nop, nop, nop, nop}))
 end
 
 local function gen_input()
-	
---First executed code (stage 1)
-	table.insert(inputs, toBits({0x8D, 0x00, 0x42, 0x8D, 0x0B, 0x42, 0x80, 0xF8}))
-  
-  
---stage 3
-	--code = {0x10A2, 0xA000, 0x0006, 0x18B9, 0x9542, 0xE80E, 0x88E8, 0x1088, 0xCBF5, 0x00E0, 0x9001, 0xEAEC}
-	code = {0x30E2, 0x00A9, 0x008D, 0xAD42, 0x4212, 0xFB10, 0x98C8, 0x0F29, 0x008D, 0x9C21, 0x2121, 0x228D, 0x8D21, 0x2122, 0x12AD, 0x3042, 0x80FB, 0xEAE4}
-	for i=1, #code do
-		lda_sta(code[i], 0x40 + i*2 - 2)
-	end
-	
-	table.insert(inputs, toBits({0x4C, 0x40, 0x00, 0xEA, 0xEA, 0xCB, 0x80, 0xF8}))
-	set_frame(stop)
+	send_nop()
 
+	send_lda(0xFFFF)
+	send_sta(0x22EB)
+	
+	send_lda(0x0000)
+	send_sta(0x3364)
+	send_sta(0x3366)
+	send_sta(0x3368)
+	send_sta(0x336A)
+	send_sta(0x336C)
+	send_sta(0x336D)
+	send_sta(0x336F)
+	send_sta(0x3371)
+	send_sta(0x3373)
+	send_sta(0x3375)
+	send_sta(0x3377)
+	send_sta(0x3379)
+	send_sta(0x337B)
+	
+	--send_cpx(0x8100)
+	set_frame(0x60)
+	--send_cpx_rts(0x8100)
 end
 
 gen_input()
 
 function on_input()
 	local index = movie.currentframe()-start
+	
+	--print(movie.currentframe() .. " - " .. start .. " = " .. index)
 
 	if index>=0 and index<#inputs then
 		local b = inputs[index+1]
@@ -144,20 +164,3 @@ function on_input()
 		end
 	end
 end
-
-
-  --9D 0E 42 E8 E8 D0 F9
-  --table.insert(inputs, toBits({0xEA, 0xEA, 0xEA, 0x64, 0x10, 0xCB, 0x80, 0xF8}))
-
-  --local code = "0D 18 0E 1C FC 1D 11 12 1C FC 20 18 1B 14"
-  --local addr = 0x0EF9
-
-  --code=code:gsub(" ", "")
-  --while #code%4~=0 do code=code.."00" end
-  --for i=1, #code, 4 do
-  --  local cur = tonumber(code:sub(i, i+3), 16)
-  --  table.insert(inputs, toBits({0xA9, bits.rshift(cur, 8), cur%256, 0x64, 0x10, 0xCB, 0x80, 0xF8}))
-  --  table.insert(inputs, toBits({0x8D, (addr+((i-1)//2))%256, (addr+((i-1)//2))//256, 0x64, 0x10, 0xCB, 0x80, 0xF8}))
-  --end
-
-  --table.insert(inputs, toBits({0x4C, addr%256, addr//256, 0x00, 0x00, 0x00, 0x80, 0xF8}))
