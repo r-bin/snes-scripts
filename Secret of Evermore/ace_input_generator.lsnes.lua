@@ -21,29 +21,11 @@ function on_paint(sync)
 	ports = string.format(
 				"0x913378: %04X\n" ..
 				"0x91005A: %04X\n" ..
-				"0x910100: %04X\n" ..
-				
-				"4218: %02X\n" ..
-				"4219: %02X\n" ..
-				"421A: %02X\n" ..
-				"421B: %02X\n" ..
-				"421C: %02X\n" ..
-				"421D: %02X\n" ..
-				"421E: %02X\n" ..
-				"421F: %02X", 
+				"0x910100: %04X\n",
 				
 				memory2.BUS:read(0x913378, 0x913379), 
 				memory2.BUS:read(0x91005A, 0x91005B), 
-				memory2.BUS:read(0x910100, 0x910101), 
-				
-				memory2.BUS:read(0x4218), 
-				memory2.BUS:read(0x4219), 
-				memory2.BUS:read(0x421A), 
-				memory2.BUS:read(0x421B), 
-				memory2.BUS:read(0x421C), 
-				memory2.BUS:read(0x421D), 
-				memory2.BUS:read(0x421E), 
-				memory2.BUS:read(0x421F)
+				memory2.BUS:read(0x910100, 0x910101)
 			)
 			
 	text(0, 0, ports)
@@ -66,7 +48,7 @@ local function toBits(input_array)
 	return controllers
 end
 
-local start = 35814 - 1 -- offset + 0x010000 + 0x4218 + 2 (frame points at controller2)
+local start = 23459 - 1 -- offset + 0x010000 + 0x4218 + 2 (frame points at controller2)
 local inputs = {}
 
 local stop = 0xDB
@@ -88,6 +70,10 @@ local function gen_id_frames(count)
 	end
 end
 
+local function send_init2()
+	table.insert(inputs, toBits({0x1A, 0x42, nop, nop, nop, wai, bra, 0xF8}))
+end
+
 local function send_nop()
 	table.insert(inputs, toBits({nop, nop, nop, nop, nop, wai, bra, 0xF8}))
 end
@@ -107,7 +93,10 @@ local function send_sta(dest)
 end
 
 local function gen_input()
-	send_nop()
+	send_init2()
+	
+	send_lda(0x0066)
+	send_sta(0x4F51) --dog_x
 	
 	send_lda(0x0015)
 	send_sta(0x4F53) --dog_y
