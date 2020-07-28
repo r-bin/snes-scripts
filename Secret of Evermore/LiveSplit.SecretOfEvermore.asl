@@ -1,5 +1,5 @@
 // Secret of Evermore AutoSplitter, hosted at:
-// #TODO#
+// https://github.com/r-bin/snes-scripts/
 // 
 // Basic format of the script is based on:
 // https://github.com/UNHchabo/AutoSplitters/blob/master/SuperMetroid
