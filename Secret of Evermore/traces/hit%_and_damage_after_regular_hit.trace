@@ -1,0 +1,254 @@
+
+8fb75a jsl $8fba06   [8fba06] A:0010 X:0008 Y:41c7 S:1fdc D:0000 DB:7e nvmxdizC V: 13 H:149 F:52 // JSL
+8fba06 ldx $4c       [00004c] A:0010 X:0008 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 13 H:162 F:52 // X = 00004c
+8fba08 lda $0016,x   [7e4e9f] A:0010 X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 13 H:169 F:52 // A = X + 000016
+
+8fba0b ora #$0010             A:2010 X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 13 H:179 F:52
+8fba0e sta $0016,x   [7e4e9f] A:2010 X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 13 H:184 F:52
+8fba11 lda $0014,x   [7e4e9d] A:2010 X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 13 H:194 F:52
+8fba14 and #$fdff             A:0000 X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdiZC V: 13 H:204 F:52
+8fba17 sta $0014,x   [7e4e9d] A:0000 X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdiZC V: 13 H:208 F:52 // "Boy - Sprite/animation script pointer" #2
+8fba1a txa                    A:0000 X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdiZC V: 13 H:218 F:52 // A = X
+8fba1b sta $0036,y   [7e41fd] A:4e89 X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 13 H:221 F:52 // "This is actually an index to the function pointer table at SOEus 8F/B6AE."
+8fba1e lda #$0014             A:4e89 X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 13 H:231 F:52 // A = 14
+8fba21 sta $0038,y   [7e41ff] A:0014 X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 13 H:236 F:52 // "This is actually an index to the function pointer table at SOEus 8F/B6AE."
+8fba24 ldx $0060,y   [7e4227] A:0014 X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 13 H:246 F:52 // "(Think it's a pointer.  I haven't really investigated.)"
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+// CHANCE TO HIT
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+8fba27 lda $8e001f,x [8ed619] A:0014 X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e NvmxdizC V: 13 H:256 F:52 // monster_evasion = 0
+8fba2b inc                    A:0000 X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nvmxdiZC V: 13 H:265 F:52 // monster_evasion = 1 (^+1)
+8fba2c lsr a                  A:0001 X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 13 H:268 F:52 // monster_evasion = 0 (^>>1)
+8fba2d and #$fffe             A:0000 X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nvmxdiZC V: 13 H:271 F:52 // monster_evasion = 0 (^&fffe)
+8fba30 tax                    A:0000 X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nvmxdiZC V: 13 H:275 F:52 // X = A <- ((monster_evasion + 1) >> 1) % fffe
+8fba31 lda $8fbaaf,x [8fbaaf] A:0000 X:0000 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdiZC V: 13 H:278 F:52 // A = 8fbaaf + X <- memory editor 8fbaaf: "[bae3] bb17 bb4b bb7f bbb3 bbe7 bc1b bc4f  bc83 bcb7 bceb bd1f bd53 bd87 bdbb bdef  be23 be57 be8b bebf bef3 bf27 bf5b bf8f  bfc3 bff7"
+8fba35 sta $12       [000012] A:bae3 X:0000 Y:41c7 S:1fd9 D:0000 DB:7e NvmxdizC V: 13 H:287 F:52 // 000012 = A <- 8fbaaf[f(monster_evasion)] <- monster_evasion: 0%=0, 5%=2, 7%=8%=9%=10%=4, 14%=6 15%=8, 25%=c 30%=e, 40%=14, 100%=32 (negative numbers)
+
+8fba37 ldx $4c       [00004c] A:bae3 X:0000 Y:41c7 S:1fd9 D:0000 DB:7e NvmxdizC V: 13 H:294 F:52 // X = 00004c
+8fba39 lda $0060,x   [7e4ee9] A:bae3 X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 13 H:301 F:52 // A = "Boy - Pointer to data structure of next valid entity.  0 if end of list." + 1 <- get current boy
+8fba3c tax                    A:0a26 X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 13 H:311 F:52 // X = A
+8fba3d tya                    A:0a26 X:0a26 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 13 H:314 F:52 // A = Y
+8fba3e eor #$01be             A:41c7 X:0a26 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 13 H:317 F:52
+8fba41 cmp $0f42     [7e0f42] A:4079 X:0a26 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 13 H:322 F:52 // "Pointer to data block of character being controlled by player"
+8fba44 bne $ba59     [8fba59] A:4079 X:0a26 Y:41c7 S:1fd9 D:0000 DB:7e Nvmxdizc V: 13 H:329 F:52
+8fba59 lda $8e0021,x [8e0a47] A:4079 X:0a26 Y:41c7 S:1fd9 D:0000 DB:7e Nvmxdizc V: 13 H:334 F:52 // "Boy - Stats - Hit %" = hit <- 1e = 30%
+8fba5d inc                    A:001e X:0a26 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 14 H:  4 F:52 // hit + 1 -> BREAKPOINT HIT% READ
+8fba5e pha                    A:001f X:0a26 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 14 H:  7 F:52 // push A
+8fba5f cpx #$0a26             A:001f X:0a26 Y:41c7 S:1fd7 D:0000 DB:7e nvmxdizc V: 14 H: 14 F:52 // compare boy pointer
+8fba62 beq $ba7c     [8fba7c] A:001f X:0a26 Y:41c7 S:1fd7 D:0000 DB:7e nvmxdiZC V: 14 H: 18 F:52 // does boy exist? -> yes
+8fba7c pla                    A:001f X:0a26 Y:41c7 S:1fd7 D:0000 DB:7e nvmxdiZC V: 14 H: 23 F:52 // pull A
+8fba7d bpl $ba80     [8fba80] A:001f X:0a26 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 14 H: 31 F:52 // branch if plus
+8fba80 cmp #$0064             A:001f X:0a26 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 14 H: 36 F:52 // A == 64? <- 100
+8fba83 bmi $ba88     [8fba88] A:001f X:0a26 Y:41c7 S:1fd9 D:0000 DB:7e Nvmxdizc V: 14 H: 40 F:52 // branch if minus <- hit% lower than 100%
+8fba88 and #$fffc             A:001f X:0a26 Y:41c7 S:1fd9 D:0000 DB:7e Nvmxdizc V: 14 H: 45 F:52 // A & fffc
+8fba8b lsr a                  A:001c X:0a26 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 14 H: 49 F:52 // A / 2
+8fba8c adc $12       [000012] A:000e X:0a26 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 14 H: 52 F:52 // A + 000012 <- hit_chance + monster_evasion_memory[0%] = bae3
+8fba8e tax                    A:baf1 X:0a26 Y:41c7 S:1fd9 D:0000 DB:7e Nvmxdizc V: 14 H: 59 F:52 // X = A <- ((hit + 1) & fffc / 2) + 000012 <- hit: 30%=0e, 31%=10, 39%=14, 43%=16, 100%=32 (increases every 4% by 2)
+8fba8f lda $8f0000,x [8fbaf1] A:baf1 X:baf1 Y:41c7 S:1fd9 D:0000 DB:7e Nvmxdizc V: 14 H: 62 F:52 // A = 8fbaf1 + X <- memory editor 8f0000: "80 [00 80] 00 80 00 80 00 80 00 80 00 80 00 80 00  80 00 80 00 80 00 80 00 80 00 80 00 80 00 80 00  80 00 80 00 80 00 80 00 00" <- hit% for monster_evasion[0%] table, 8f000E is the base for the tables
+8fba93 beq $baa4     [8fbaa4] A:8000 X:baf1 Y:41c7 S:1fd9 D:0000 DB:7e Nvmxdizc V: 14 H: 71 F:52 // branch if equal
+8fba95 sta $12       [000012] A:8000 X:baf1 Y:41c7 S:1fd9 D:0000 DB:7e Nvmxdizc V: 14 H: 74 F:52 // 000012 = actual_hit_chance = #8000 <- based on X = hit_table (positive) + monster_evasion_table (negative)
+8fba97 jsl $80859b   [80859b] A:8000 X:baf1 Y:41c7 S:1fd9 D:0000 DB:7e Nvmxdizc V: 14 H: 81 F:52 // JSL
+
+80859b lda $0139     [7e0139] A:8000 X:baf1 Y:41c7 S:1fd6 D:0000 DB:7e Nvmxdizc V: 14 H: 95 F:52 // "Shifting registers for random number generator"
+80859e rol a                  A:809f X:baf1 Y:41c7 S:1fd6 D:0000 DB:7e Nvmxdizc V: 14 H:103 F:52 // A rotate left
+80859f bcc $85a4     [8085a4] A:013e X:baf1 Y:41c7 S:1fd6 D:0000 DB:7e nvmxdizC V: 14 H:106 F:52 // branch if carry clear
+8085a1 inc $0137     [7e0137] A:013e X:baf1 Y:41c7 S:1fd6 D:0000 DB:7e nvmxdizC V: 14 H:109 F:52 // "Shifting registers for random number generator" A + 1
+8085a4 adc $0135     [7e0135] A:013e X:baf1 Y:41c7 S:1fd6 D:0000 DB:7e NvmxdizC V: 14 H:123 F:52 // "Shifting registers for random number generator" A + 7e0135
+8085a7 sta $0139     [7e0139] A:66c5 X:baf1 Y:41c7 S:1fd6 D:0000 DB:7e nvmxdizc V: 14 H:132 F:52 // "Shifting registers for random number generator" 7e0139 = A
+8085aa lda $0137     [7e0137] A:66c5 X:baf1 Y:41c7 S:1fd6 D:0000 DB:7e nvmxdizc V: 14 H:150 F:52 // "Shifting registers for random number generator" A = 7e0137
+8085ad rol a                  A:eed6 X:baf1 Y:41c7 S:1fd6 D:0000 DB:7e Nvmxdizc V: 14 H:159 F:52
+8085ae bcc $85b3     [8085b3] A:ddac X:baf1 Y:41c7 S:1fd6 D:0000 DB:7e NvmxdizC V: 14 H:162 F:52
+8085b0 inc $0135     [7e0135] A:ddac X:baf1 Y:41c7 S:1fd6 D:0000 DB:7e NvmxdizC V: 14 H:165 F:52 // "Shifting registers for random number generator"
+8085b3 adc $0133     [7e0133] A:ddac X:baf1 Y:41c7 S:1fd6 D:0000 DB:7e nvmxdizC V: 14 H:179 F:52 // "Shifting registers for random number generator"
+8085b6 sta $0137     [7e0137] A:0292 X:baf1 Y:41c7 S:1fd6 D:0000 DB:7e nvmxdizC V: 14 H:187 F:52 // "Shifting registers for random number generator"
+8085b9 lda $0135     [7e0135] A:0292 X:baf1 Y:41c7 S:1fd6 D:0000 DB:7e nvmxdizC V: 14 H:196 F:52 // "Shifting registers for random number generator"
+8085bc rol a                  A:6587 X:baf1 Y:41c7 S:1fd6 D:0000 DB:7e nvmxdizC V: 14 H:204 F:52
+8085bd bcc $85c2     [8085c2] A:cb0f X:baf1 Y:41c7 S:1fd6 D:0000 DB:7e Nvmxdizc V: 14 H:207 F:52
+8085c2 adc $0137     [7e0137] A:cb0f X:baf1 Y:41c7 S:1fd6 D:0000 DB:7e Nvmxdizc V: 14 H:212 F:52 // "Shifting registers for random number generator"
+8085c5 sta $0135     [7e0135] A:cda1 X:baf1 Y:41c7 S:1fd6 D:0000 DB:7e Nvmxdizc V: 14 H:220 F:52 // "Shifting registers for random number generator"
+8085c8 lda $0133     [7e0133] A:cda1 X:baf1 Y:41c7 S:1fd6 D:0000 DB:7e Nvmxdizc V: 14 H:229 F:52 // "Shifting registers for random number generator"
+8085cb rol a                  A:24e5 X:baf1 Y:41c7 S:1fd6 D:0000 DB:7e nvmxdizc V: 14 H:237 F:52
+8085cc bcc $85d1     [8085d1] A:49ca X:baf1 Y:41c7 S:1fd6 D:0000 DB:7e nvmxdizc V: 14 H:240 F:52
+8085d1 adc $0139     [7e0139] A:49ca X:baf1 Y:41c7 S:1fd6 D:0000 DB:7e nvmxdizc V: 14 H:245 F:52 // "Shifting registers for random number generator"
+8085d4 sta $0133     [7e0133] A:b08f X:baf1 Y:41c7 S:1fd6 D:0000 DB:7e NVmxdizc V: 14 H:253 F:52 // "Shifting registers for random number generator"
+8085d7 rtl                    A:b08f X:baf1 Y:41c7 S:1fd6 D:0000 DB:7e NVmxdizc V: 14 H:262 F:52 // RTL
+
+8fba9b and #$7fff             A:b08f X:baf1 Y:41c7 S:1fd9 D:0000 DB:7e NVmxdizc V: 14 H:272 F:52 // RNG & 7fff <- 0...12431‬...32767‬
+8fba9e cmp $12       [000012] A:308f X:baf1 Y:41c7 S:1fd9 D:0000 DB:7e nVmxdizc V: 14 H:277 F:52 // 000012 == RNG? <- 32768‬ == 12431?
+8fbaa0 bcs $baa4     [8fbaa4] A:308f X:baf1 Y:41c7 S:1fd9 D:0000 DB:7e NVmxdizc V: 14 H:284 F:52 // branch if carry set <- RNG > 000012 ? (8000 will always return false)
+8fbaa2 sec                    A:308f X:baf1 Y:41c7 S:1fd9 D:0000 DB:7e NVmxdizc V: 14 H:287 F:52 // set carry
+8fbaa3 rtl                    A:308f X:baf1 Y:41c7 S:1fd9 D:0000 DB:7e NVmxdizC V: 14 H:290 F:52 // RTL
+
+
+8fb75e bcc $b77b     [8fb77b] A:308f X:baf1 Y:41c7 S:1fdc D:0000 DB:7e NVmxdizC V: 14 H:300 F:52 // branch
+
+8fb760 jsl $8fc067   [8fc067] A:308f X:baf1 Y:41c7 S:1fdc D:0000 DB:7e NVmxdizC V: 14 H:303 F:52 // JSL
+
+8fc067 ldx $4c       [00004c] A:308f X:baf1 Y:41c7 S:1fd9 D:0000 DB:7e NVmxdizC V: 14 H:317 F:52 // X = 00004c
+8fc069 jsl $8fc02b   [8fc02b] A:308f X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e nVmxdizC V: 14 H:323 F:52 // JSL
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+// INFLICTED DAMAGE
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+8fc02b cpx #$4e89             A:308f X:4e89 Y:41c7 S:1fd6 D:0000 DB:7e nVmxdizC V: 14 H:336 F:52 // X == 4e89?
+8fc02e bne $c03d     [8fc03d] A:308f X:4e89 Y:41c7 S:1fd6 D:0000 DB:7e nVmxdiZC V: 15 H:  1 F:52 // branch if not equal <- X != 4e89
+8fc030 lda $0aba     [7e0aba] A:308f X:4e89 Y:41c7 S:1fd6 D:0000 DB:7e nVmxdiZC V: 15 H:  4 F:52 // A = "Current equipped weapon (0000 - 001A, even numbers, inclusive.  see 7E22DA and 7E22DB lists below for weapon order.)" <- 2 = bone crusher
+8fc033 cmp #$001a             A:0002 X:4e89 Y:41c7 S:1fd6 D:0000 DB:7e nVmxdizC V: 15 H: 12 F:52 // A == 1a? <- end of the weapon list?
+8fc036 bne $c03d     [8fc03d] A:0002 X:4e89 Y:41c7 S:1fd6 D:0000 DB:7e NVmxdizc V: 15 H: 17 F:52 // branch if not equal
+8fc03d phx                    A:0002 X:4e89 Y:41c7 S:1fd6 D:0000 DB:7e NVmxdizc V: 15 H: 21 F:52 // push X
+8fc03e lda $0060,x   [7e4ee9] A:0002 X:4e89 Y:41c7 S:1fd4 D:0000 DB:7e NVmxdizc V: 15 H: 28 F:52 // A = "Boy - Pointer to data structure of next valid entity.  0 if end of list." + 1 + 60
+8fc041 tax                    A:0a26 X:4e89 Y:41c7 S:1fd4 D:0000 DB:7e nVmxdizc V: 15 H: 38 F:52 // X = A
+8fc042 lda $8e0019,x [8e0a3f] A:0a26 X:0a26 Y:41c7 S:1fd4 D:0000 DB:7e nVmxdizc V: 15 H: 41 F:52 // A = "Boy - Stats - Attack"
+8fc046 plx                    A:0011 X:0a26 Y:41c7 S:1fd4 D:0000 DB:7e nVmxdizc V: 15 H: 51 F:52 // pull X
+8fc047 phy                    A:0011 X:4e89 Y:41c7 S:1fd6 D:0000 DB:7e nVmxdizc V: 15 H: 60 F:52 // push Y
+8fc048 ldy $002e,x   [7e4eb7] A:0011 X:4e89 Y:41c7 S:1fd4 D:0000 DB:7e nVmxdizc V: 15 H: 67 F:52 // Y = "Boy - Current weapon charging level (0400 = 100%)"
+8fc04b cpy #$0200             A:0011 X:4e89 Y:0400 S:1fd4 D:0000 DB:7e nVmxdizc V: 15 H: 77 F:52 // Y == 200? <- 50%
+8fc04e bmi $c063     [8fc063] A:0011 X:4e89 Y:0400 S:1fd4 D:0000 DB:7e nVmxdizC V: 15 H: 81 F:52 // branch if minus <- charge < 50%
+8fc050 cpy #$0400             A:0011 X:4e89 Y:0400 S:1fd4 D:0000 DB:7e nVmxdizC V: 15 H: 84 F:52 // Y == 400? <- 100%
+8fc053 bmi $c064     [8fc064] A:0011 X:4e89 Y:0400 S:1fd4 D:0000 DB:7e nVmxdiZC V: 15 H: 89 F:52 // branch if minus <- charge < 100%
+8fc055 cpy #$0800             A:0011 X:4e89 Y:0400 S:1fd4 D:0000 DB:7e nVmxdiZC V: 15 H: 92 F:52 // Y == 800? <- 200%
+8fc058 bmi $c065     [8fc065] A:0011 X:4e89 Y:0400 S:1fd4 D:0000 DB:7e NVmxdizc V: 15 H: 96 F:52 // branch if minus <- charge < 200%
+8fc065 ply                    A:0011 X:4e89 Y:0400 S:1fd4 D:0000 DB:7e NVmxdizc V: 15 H:101 F:52 // pull Y
+8fc066 rtl                    A:0011 X:4e89 Y:41c7 S:1fd6 D:0000 DB:7e nVmxdizc V: 15 H:109 F:52 // RTL <- A = charge_dependent_attack
+
+8fc06d sta $12       [000012] A:0011 X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e nVmxdizc V: 15 H:120 F:52 // 000012 = A <- charge_dependent_attack
+8fc06f ldx $0060,y   [7e4227] A:0011 X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e nVmxdizc V: 15 H:127 F:52 // X = "Monster/NPC data for the current room. Each Monster/NPC gets x8E bytes of data."[?] + 60 <- "Used to identify the type of monster/npc", monster_index = #c536 + #4a * index
+8fc072 lda $8e001b,x [8ed615] A:0011 X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e NVmxdizc V: 15 H:147 F:52 // A = X + 8e001b <- memory editor 8ed615: "0009 [001c] 0020 0000 0028 0002 0000 0002  0108 0000", maybe monster_pseudo_armor?
+8fc076 lsr a                  A:001c X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nVmxdizc V: 15 H:156 F:52 // A / 2
+8fc077 lsr a                  A:000e X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nVmxdizc V: 15 H:159 F:52 // A / 2
+8fc078 clc                    A:0007 X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nVmxdizc V: 15 H:162 F:52 // clear carry
+8fc079 sbc $12       [000012] A:0007 X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nVmxdizc V: 15 H:165 F:52 // A - 000012
+8fc07b eor #$ffff             A:fff5 X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e Nvmxdizc V: 15 H:172 F:52 // !A
+8fc07e cmp #$0001             A:000a X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 15 H:176 F:52 // A == 1?
+8fc081 bpl $c086     [8fc086] A:000a X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 15 H:181 F:52 // branch if plus <- dmg > 1?
+8fc086 sta $12       [000012] A:000a X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 15 H:185 F:52 // 000012 = A <- A = !(monster_type[?] / 2 / 2 - 000012) = 000a
+8fc088 inc                    A:000a X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 15 H:192 F:52 // A + 1
+8fc089 sta $02       [000002] A:000b X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 15 H:195 F:52 // 000002 = A <- A = !(monster_type[?] / 2 / 2 - 000012) + 1 = 000b
+8fc08b phy                    A:000b X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 15 H:202 F:52 // push Y
+8fc08c jsl $80ad62   [80ad62] A:000b X:d5fa Y:41c7 S:1fd7 D:0000 DB:7e nvmxdizC V: 15 H:209 F:52 // JSL <- A = !(monster_type[?] / 2 / 2 - 000012), with 000012 = attack || attack/2 || attack/2/2
+
+80ad62 phb                    A:000b X:d5fa Y:41c7 S:1fd4 D:0000 DB:7e nvmxdizC V: 15 H:223 F:52 // push DB
+80ad63 pea $8080              A:000b X:d5fa Y:41c7 S:1fd3 D:0000 DB:7e nvmxdizC V: 15 H:228 F:52 // push 8080 ?
+80ad66 plb                    A:000b X:d5fa Y:41c7 S:1fd1 D:0000 DB:7e nvmxdizC V: 15 H:236 F:52 // pull DB
+80ad67 plb                    A:000b X:d5fa Y:41c7 S:1fd2 D:0000 DB:80 NvmxdizC V: 15 H:243 F:52 // pull DB
+80ad68 jsl $80859b   [80859b] A:000b X:d5fa Y:41c7 S:1fd3 D:0000 DB:80 NvmxdizC V: 15 H:249 F:52 // JSL
+
+80859b lda $0139     [800139] A:000b X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 NvmxdizC V: 15 H:263 F:52 // A = "Shifting registers for random number generator"
+80859e rol a                  A:66c5 X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 nvmxdizC V: 15 H:271 F:52 // A rotate left
+80859f bcc $85a4     [8085a4] A:cd8b X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 Nvmxdizc V: 15 H:274 F:52 // branch if carry clear
+8085a4 adc $0135     [800135] A:cd8b X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 Nvmxdizc V: 15 H:279 F:52 // A + "Shifting registers for random number generator"
+8085a7 sta $0139     [800139] A:9b2c X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 NvmxdizC V: 15 H:287 F:52 // "Shifting registers for random number generator"
+8085aa lda $0137     [800137] A:9b2c X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 NvmxdizC V: 15 H:296 F:52 // "Shifting registers for random number generator"
+8085ad rol a                  A:0292 X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 nvmxdizC V: 15 H:304 F:52
+8085ae bcc $85b3     [8085b3] A:0525 X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 nvmxdizc V: 15 H:307 F:52
+8085b3 adc $0133     [800133] A:0525 X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 nvmxdizc V: 15 H:312 F:52 // "Shifting registers for random number generator"
+8085b6 sta $0137     [800137] A:b5b4 X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 Nvmxdizc V: 15 H:320 F:52 // "Shifting registers for random number generator"
+8085b9 lda $0135     [800135] A:b5b4 X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 Nvmxdizc V: 15 H:328 F:52 // "Shifting registers for random number generator"
+8085bc rol a                  A:cda1 X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 Nvmxdizc V: 15 H:336 F:52
+8085bd bcc $85c2     [8085c2] A:9b42 X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 NvmxdizC V: 15 H:339 F:52
+8085bf inc $0133     [800133] A:9b42 X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 NvmxdizC V: 16 H:  2 F:52 // "Shifting registers for random number generator"
+8085c2 adc $0137     [800137] A:9b42 X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 NvmxdizC V: 16 H: 16 F:52 // "Shifting registers for random number generator"
+8085c5 sta $0135     [800135] A:50f7 X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 nVmxdizC V: 16 H: 25 F:52 // "Shifting registers for random number generator"
+8085c8 lda $0133     [800133] A:50f7 X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 nVmxdizC V: 16 H: 33 F:52 // "Shifting registers for random number generator"
+8085cb rol a                  A:b090 X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 NVmxdizC V: 16 H: 42 F:52
+8085cc bcc $85d1     [8085d1] A:6121 X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 nVmxdizC V: 16 H: 45 F:52
+8085ce inc $0139     [800139] A:6121 X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 nVmxdizC V: 16 H: 48 F:52 // "Shifting registers for random number generator"
+8085d1 adc $0139     [800139] A:6121 X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 NVmxdizC V: 16 H: 62 F:52 // "Shifting registers for random number generator"
+8085d4 sta $0133     [800133] A:fc4f X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 Nvmxdizc V: 16 H: 70 F:52 // "Shifting registers for random number generator"
+8085d7 rtl                    A:fc4f X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 Nvmxdizc V: 16 H: 79 F:52 // RTL
+
+80ad6c sta $10       [000010] A:fc4f X:d5fa Y:41c7 S:1fd3 D:0000 DB:80 Nvmxdizc V: 16 H: 89 F:52 // 000010 = A
+80ad6e tay                    A:fc4f X:d5fa Y:41c7 S:1fd3 D:0000 DB:80 Nvmxdizc V: 16 H: 96 F:52 // Y = A
+80ad6f ldx $02       [000002] A:fc4f X:d5fa Y:fc4f S:1fd3 D:0000 DB:80 Nvmxdizc V: 16 H: 99 F:52 // X = 000002 <- monster_pseudo_armor ?
+80ad71 txa                    A:fc4f X:000b Y:fc4f S:1fd3 D:0000 DB:80 nvmxdizc V: 16 H:106 F:52 // A = X
+80ad72 and #$ff00             A:000b X:000b Y:fc4f S:1fd3 D:0000 DB:80 nvmxdizc V: 16 H:109 F:52 // A & ff00
+80ad75 beq $adc1     [80adc1] A:0000 X:000b Y:fc4f S:1fd3 D:0000 DB:80 nvmxdiZc V: 16 H:114 F:52 // brach if equal
+
+80adc1 sep #$10               A:0000 X:000b Y:fc4f S:1fd3 D:0000 DB:80 nvmxdiZc V: 16 H:118 F:52 // set processor status #10 (8bit index registers)
+80adc3 stx $4202     [804202] A:0000 X:000b Y:004f S:1fd3 D:0000 DB:80 nvmXdiZc V: 16 H:123 F:52 // 804202 = X <- "Monster/NPC data for the current room. Each Monster/NPC gets x8E bytes of data."[?] + 3b
+80adc6 sty $4203     [804203] A:0000 X:000b Y:004f S:1fd3 D:0000 DB:80 nvmXdiZc V: 16 H:129 F:52 // 804203 = Y <- "Monster/NPC data for the current room. Each Monster/NPC gets x8E bytes of data."[?] + 3c <- RNG
+80adc9 nop                    A:0000 X:000b Y:004f S:1fd3 D:0000 DB:80 nvmXdiZc V: 16 H:145 F:52
+80adca ldy $11       [000011] A:0000 X:000b Y:004f S:1fd3 D:0000 DB:80 nvmXdiZc V: 16 H:148 F:52 // Y = 000011
+80adcc lda $4216     [804216] A:0000 X:000b Y:00fc S:1fd3 D:0000 DB:80 NvmXdizc V: 16 H:153 F:52 // A = 804216 <- "Monster/NPC data for the current room. Each Monster/NPC gets x8E bytes of data."[?] + 4e
+80adcf sta $0a       [00000a] A:0365 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:160 F:52 // 00000a = A
+80add1 stx $4202     [804202] A:0365 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:167 F:52 // 804202 = X <- "Monster/NPC data for the current room. Each Monster/NPC gets x8E bytes of data."[?] + 3b
+80add4 sty $4203     [804203] A:0365 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:173 F:52 // 804203 = Y <- "Monster/NPC data for the current room. Each Monster/NPC gets x8E bytes of data."[?] + 3c <- RNG
+80add7 stz $0c       [00000c] A:0365 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:179 F:52 // 00000c = 0 (16 bit)
+80add9 nop                    A:0365 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:186 F:52
+80adda lda $4216     [804216] A:0365 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:189 F:52 // A = 804216 <- "Monster/NPC data for the current room. Each Monster/NPC gets x8E bytes of data."[?] + 4e
+80addd clc                    A:0ad4 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:197 F:52 // clear carry
+80adde adc $0b       [00000b] A:0ad4 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:200 F:52 // A + 00000b = RNG increment
+80ade0 sta $0b       [00000b] A:0ad7 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:207 F:52 // 00000b = A (16 bit) <- writes the MSB into 00000c (LSB)
+80ade2 bcc $ade6     [80ade6] A:0ad7 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:214 F:52 // branch if carry clear
+80ade6 rep #$10               A:0ad7 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:218 F:52 // reset processor status
+80ade8 plb                    A:0ad7 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmxdizc V: 16 H:223 F:52 // pull DB
+80ade9 lda $0c       [00000c] A:0ad7 X:000b Y:00fc S:1fd4 D:0000 DB:7e nvmxdizc V: 16 H:229 F:52 // A = 00000c <- indirectly via 00000b: 00000b >> 8 = pseudo RNG
+80adeb sta $02       [000002] A:000a X:000b Y:00fc S:1fd4 D:0000 DB:7e nvmxdizc V: 16 H:236 F:52 // 000002 = A
+80aded stz $04       [000004] A:000a X:000b Y:00fc S:1fd4 D:0000 DB:7e nvmxdizc V: 16 H:243 F:52 // 000004 = 0
+80adef rtl                    A:000a X:000b Y:00fc S:1fd4 D:0000 DB:7e nvmxdizc V: 16 H:250 F:52 // RTL <- damage seed
+
+8fc090 ply                    A:000a X:000b Y:00fc S:1fd7 D:0000 DB:7e nvmxdizc V: 16 H:261 F:52 // pull Y = 41c7
+8fc091 clc                    A:000a X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 16 H:269 F:52 // clear carry
+8fc092 adc $12       [000012] A:000a X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 16 H:272 F:52 // A + 000012
+8fc094 asl a                  A:0014 X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 16 H:279 F:52 // A * 2
+8fc095 adc $12       [000012] A:0028 X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 16 H:282 F:52 // A + 000012
+8fc097 lsr a                  A:0032 X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 16 H:289 F:52 // A / 2
+8fc098 lsr a                  A:0019 X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 16 H:292 F:52 // A / 2
+8fc099 rtl                    A:000c X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 16 H:295 F:52 // RTL -> A = ((A + 000012) <<< 1 + 000012 ) / 2 / 2 <- inflicted damage, 000012 = boy_attack > 1
+
+
+
+8fb764 jsl $8fc0d3   [8fc0d3] A:000c X:000b Y:41c7 S:1fdc D:0000 DB:7e nvmxdizC V: 16 H:306 F:52 // JSL
+8fc0d3 sta $0ea0     [7e0ea0] A:000c X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 16 H:319 F:52 // "Amount of damage from most recent attack" + 12 = A <- BREAKPOINT RECENT_ATTACK
+8fc0d6 lda $0010,y   [7e41d7] A:000c X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 16 H:327 F:52 // A = "Monster/NPC data for the current room. Each Monster/NPC gets x8E bytes of data." + 10 <- "HP: 0F - 10h" ?
+8fc0d9 bit #$4000             A:0100 X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 16 H:337 F:52 // bit test
+8fc0dc bne $c11d     [8fc11d] A:0100 X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdiZC V: 17 H:  1 F:52 // branch if not equal <- would skip this block
+8fc0de lda $0014,y   [7e41db] A:0100 X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdiZC V: 17 H:  4 F:52 // A = "Monster/NPC data for the current room. Each Monster/NPC gets x8E bytes of data." + 12
+8fc0e1 bit #$010d             A:0000 X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdiZC V: 17 H: 14 F:52 // bit test
+8fc0e4 bne $c11d     [8fc11d] A:0000 X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdiZC V: 17 H: 19 F:52 // branch if not equal <- would skip this block
+8fc0e6 bit #$0002             A:0000 X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdiZC V: 17 H: 22 F:52 // bit test
+8fc0e9 beq $c0f6     [8fc0f6] A:0000 X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdiZC V: 17 H: 26 F:52 // branch if not equal
+8fc0f6 lda $0012,y   [7e41d9] A:0000 X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdiZC V: 17 H: 31 F:52 // A = "Amount of damage from most recent attack" + 12
+8fc0f9 ora #$0438             A:0000 X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdiZC V: 17 H: 41 F:52 // A | #0438
+8fc0fc sta $0012,y   [7e41d9] A:0438 X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 17 H: 45 F:52 // "Amount of damage from most recent attack" + 12 = A
+8fc0ff bit #$2000             A:0438 X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 17 H: 55 F:52 // bit test
+8fc102 beq $c107     [8fc107] A:0438 X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdiZC V: 17 H: 60 F:52 // branch if not equal
+8fc107 lda $0ea0     [7e0ea0] A:0438 X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdiZC V: 17 H: 64 F:52 // "Amount of damage from most recent attack"
+8fc10a cmp #$03e8             A:000c X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 17 H: 73 F:52 // A == 03e8 ? <- 1000
+8fc10d bcc $c112     [8fc112] A:000c X:000b Y:41c7 S:1fd9 D:0000 DB:7e Nvmxdizc V: 17 H: 77 F:52 // branch if carry clear <- A < 1000 ?
+8fc112 sta $0ea0     [7e0ea0] A:000c X:000b Y:41c7 S:1fd9 D:0000 DB:7e Nvmxdizc V: 17 H: 82 F:52 // "Amount of damage from most recent attack"
+8fc115 clc                    A:000c X:000b Y:41c7 S:1fd9 D:0000 DB:7e Nvmxdizc V: 17 H: 90 F:52 // clear carry
+8fc116 adc $0076,y   [7e423d] A:000c X:000b Y:41c7 S:1fd9 D:0000 DB:7e Nvmxdizc V: 17 H: 93 F:52 // A + "Monster/NPC data for the current room. Each Monster/NPC gets x8E bytes of data." + 76 <- "x76-x77 = damage taken from last attack"
+8fc119 sta $0076,y   [7e423d] A:000c X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 17 H:103 F:52 // "Monster/NPC data for the current room. Each Monster/NPC gets x8E bytes of data." + 76 = A <- "x76-x77 = damage taken from last attack"
+8fc11c rtl                    A:000c X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 17 H:113 F:52 // RTL
+
+8fb768 jsl $8fc17f   [8fc17f] A:000c X:000b Y:41c7 S:1fdc D:0000 DB:7e nvmxdizc V: 17 H:124 F:52
+8fc17f ldx $4c       [00004c] A:000c X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 17 H:147 F:52
+8fc181 txa                    A:000c X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 17 H:154 F:52
+8fc182 sta $0024,y   [7e41eb] A:4e89 X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 17 H:157 F:52
+8fc185 sta $0080,y   [7e4247] A:4e89 X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 17 H:167 F:52
+8fc188 cpy #$4e89             A:4e89 X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 17 H:177 F:52
+8fc18b bcs $c1b4     [8fc1b4] A:4e89 X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e Nvmxdizc V: 17 H:182 F:52
+8fc18d sty $4ead     [7e4ead] A:4e89 X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e Nvmxdizc V: 17 H:185 F:52
+8fc190 sty $4f5b     [7e4f5b] A:4e89 X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e Nvmxdizc V: 17 H:193 F:52
+8fc193 phy                    A:4e89 X:4e89 Y:41c7 S:1fd9 D:0000 DB:7e Nvmxdizc V: 17 H:202 F:52
+8fc194 lda $0060,y   [7e4227] A:4e89 X:4e89 Y:41c7 S:1fd7 D:0000 DB:7e Nvmxdizc V: 17 H:209 F:52
+8fc197 pha                    A:d5fa X:4e89 Y:41c7 S:1fd7 D:0000 DB:7e Nvmxdizc V: 17 H:219 F:52
+
+8fc198 ldy $3ddf     [7e3ddf] A:d5fa X:4e89 Y:41c7 S:1fd5 D:0000 DB:7e Nvmxdizc V: 17 H:226 F:52 // "Pointer to data structure for first valid entity" -> 7E42e3
+8fc19b lda $0060,y   [7e4343] A:d5fa X:4e89 Y:42e3 S:1fd5 D:0000 DB:7e nvmxdizc V: 17 H:234 F:52 // "Used to identify the type of monster/npc"
+8fc19e cmp $01,s     [001fd6] A:d5fa X:4e89 Y:42e3 S:1fd5 D:0000 DB:7e Nvmxdizc V: 17 H:244 F:52
+8fc1a0 bne $c1ab     [8fc1ab] A:d5fa X:4e89 Y:42e3 S:1fd5 D:0000 DB:7e nvmxdiZC V: 17 H:253 F:52
+8fc1a2 cmp $0060,x   [7e4ee9] A:d5fa X:4e89 Y:42e3 S:1fd5 D:0000 DB:7e nvmxdiZC V: 17 H:256 F:52
+8fc1a5 beq $c1ab     [8fc1ab] A:d5fa X:4e89 Y:42e3 S:1fd5 D:0000 DB:7e NvmxdizC V: 17 H:266 F:52
+8fc1a7 txa                    A:d5fa X:4e89 Y:42e3 S:1fd5 D:0000 DB:7e NvmxdizC V: 17 H:269 F:52
+8fc1a8 sta $0024,y   [7e4307] A:4e89 X:4e89 Y:42e3 S:1fd5 D:0000 DB:7e nvmxdizC V: 17 H:272 F:52 // "Pointer to ram address of the target of the monster's attacks"
+8fc1ab lda $005e,y   [7e4341] A:4e89 X:4e89 Y:42e3 S:1fd5 D:0000 DB:7e nvmxdizC V: 17 H:282 F:52 // "Pointer to data structure of next valid entity.  0 if end of list."
+8fc1ae tay                    A:41c7 X:4e89 Y:42e3 S:1fd5 D:0000 DB:7e nvmxdizC V: 17 H:292 F:52

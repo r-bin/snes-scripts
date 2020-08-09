@@ -1,0 +1,66 @@
+8f839e lda $0a50     [7e0a50] A:0002 X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H: 126 // "Boy - Stats - Level"
+8f83a1 asl a                  A:0001 X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H: 160 // A = level << 1
+8f83a2 tax                    A:0002 X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H: 172 // X = A = 2
+8f83a3 lda $7e2261   [7e2261] A:0002 X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H: 184 // "Hero availability/Charms"
+8f83a7 and #$0040             A:ff00 X:0002 Y:00da S:1fe7 D:0000 DB:7e Nvmxdizc V:167 H: 224 // "40 = Chocobo Egg"
+8f83aa beq $83b2     [8f83b2] A:0000 X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdiZc V:167 H: 242
+8f83b2 lda $8c919d,x [8c919f] A:0000 X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdiZc V:167 H: 260
+8f83b6 cmp #$03e7             A:001e X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H: 296
+8f83b9 bmi $83be     [8f83be] A:001e X:0002 Y:00da S:1fe7 D:0000 DB:7e Nvmxdizc V:167 H: 314
+8f83be sta $0a35     [7e0a35] A:001e X:0002 Y:00da S:1fe7 D:0000 DB:7e Nvmxdizc V:167 H: 332 // "Boy - Stats - Max HP"
+8f83c1 cmp $4eb3     [7e4eb3] A:001e X:0002 Y:00da S:1fe7 D:0000 DB:7e Nvmxdizc V:167 H: 366 // "Boy - Current HP"
+8f83c4 bpl $83c9     [8f83c9] A:001e X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizC V:167 H: 400
+8f83c9 lda $7e2263   [7e2263] A:001e X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizC V:167 H: 418 // "Charms"
+8f83cd bit #$0001             A:00ff X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizC V:167 H: 458 // "01 = Sun Stone"
+8f83d0 beq $83d8     [8f83d8] A:00ff X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizC V:167 H: 476
+8f83d2 lda $8c9363,x [8c9365] A:00ff X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizC V:167 H: 488
+8f83d6 bra $83dc     [8f83dc] A:000f X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizC V:167 H: 524
+8f83dc clc                    A:000f X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizC V:167 H: 582
+8f83dd adc $4f29     [7e4f29] A:000f X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H: 594 // "Boy - Overall boost to Attack statistic from alchemy/items/statuses"
+8f83e0 sta $0a3f     [7e0a3f] A:000f X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H: 628 // "Boy - Stats - Attack"
+8f83e3 lda $7e2262   [7e2262] A:000f X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H: 662 // "Charms"
+8f83e7 bit #$0080             A:ffff X:0002 Y:00da S:1fe7 D:0000 DB:7e Nvmxdizc V:167 H: 702 // "80 = Staff of Life"
+8f83ea beq $83f2     [8f83f2] A:ffff X:0002 Y:00da S:1fe7 D:0000 DB:7e Nvmxdizc V:167 H: 720
+8f83ec lda $8c9285,x [8c9287] A:ffff X:0002 Y:00da S:1fe7 D:0000 DB:7e Nvmxdizc V:167 H: 732
+8f83f0 bra $83f6     [8f83f6] A:000a X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H: 768
+8f83f6 clc                    A:000a X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H: 786
+8f83f7 adc $4f2b     [7e4f2b] A:000a X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H: 798 // "Boy - Overall boost to Defense statistic from alchemy/items/statuses"
+8f83fa sta $0a41     [7e0a41] A:000a X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H: 832 // "Boy - Stats - Defense"
+8f83fd lda $7e2263   [7e2263] A:000a X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H: 866 // "Charms"
+8f8401 bit #$0004             A:00ff X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H: 906 // "04 = Wizard's Coin"
+8f8404 beq $840c     [8f840c] A:00ff X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H: 924
+8f8406 lda $8c9445,x [8c9447] A:00ff X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H: 936
+8f840a bra $8410     [8f8410] A:000c X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H: 972
+8f8410 clc                    A:000c X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H: 990
+8f8411 adc $4f31     [7e4f31] A:000c X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H:1002 // "Boy - Overall boost to Magic Defense statistic from alchemy/items/statuses (unused)"
+8f8414 sta $0a43     [7e0a43] A:000c X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H:1036 // "Boy - Stats - Magic Def"
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+// CHANCE TO HIT
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+8f8417 lda $7e2262   [7e2262] A:000c X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H:1070 // "01 = Jade Disk", X = current level = 2
+8f841b bit #$0001             A:ffff X:0002 Y:00da S:1fe7 D:0000 DB:7e Nvmxdizc V:167 H:1110
+8f841e beq $8426     [8f8426] A:ffff X:0002 Y:00da S:1fe7 D:0000 DB:7e Nvmxdizc V:167 H:1128
+8f8420 lda $8c8f0d,x [8c8f0f] A:ffff X:0002 Y:00da S:1fe7 D:0000 DB:7e Nvmxdizc V:167 H:1140 // memory editor: "2000 [2100] 2100 2200 2200 2300 2300 2400 2400 2500 2500 2600 2600 2700 2700 2800 2800 2900"
+8f8424 bra $842a     [8f842a] A:0021 X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H:1176
+8f842a clc                    A:0021 X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H:1194
+8f842b adc $4f2f     [7e4f2f] A:0021 X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H:1206 // "Boy - Overall boost to Hit % statistic from alchemy/items/statuses"
+8f842e cmp #$0063             A:0021 X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H:1240
+8f8431 bmi $8436     [8f8436] A:0021 X:0002 Y:00da S:1fe7 D:0000 DB:7e Nvmxdizc V:167 H:1258
+8f8436 sta $0a47     [7e0a47] A:0021 X:0002 Y:00da S:1fe7 D:0000 DB:7e Nvmxdizc V:167 H:1276 // "Boy - Stats - Hit %"
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+// CHANCE TO HIT - SAME TRANSITION WITHOUT CHARMS
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+8f8417 lda $7e2262   [7e2262] A:0005 X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H:1034 // "01 = Jade Disk"
+8f841b bit #$0001             A:0000 X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdiZc V:167 H:1074
+8f841e beq $8426     [8f8426] A:0000 X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdiZc V:167 H:1092
+8f8426 lda $8c8f03,x [8c8f05] A:0000 X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdiZc V:167 H:1110 // memory editor: "0000 [1e00] 1f00 1f00 2000 2000 2100 2100 2200 2200 2300 2300 2400 2400 2500 2500 2600 2600 2700 2700 2800 2800 2900"
+8f842a clc                    A:001e X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H:1146
+8f842b adc $4f2f     [7e4f2f] A:001e X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H:1158 // "Boy - Overall boost to Hit % statistic from alchemy/items/statuses"
+8f842e cmp #$0063             A:001e X:0002 Y:00da S:1fe7 D:0000 DB:7e nvmxdizc V:167 H:1192
+8f8431 bmi $8436     [8f8436] A:001e X:0002 Y:00da S:1fe7 D:0000 DB:7e Nvmxdizc V:167 H:1210
+8f8436 sta $0a47     [7e0a47] A:001e X:0002 Y:00da S:1fe7 D:0000 DB:7e Nvmxdizc V:167 H:1228 // "Boy - Stats - Hit %"
