@@ -1,0 +1,59 @@
+{
+  "game":"Lufia II: Rise of the Sinistrals",
+  "autostart":"start",
+  "categories":[
+     {
+        "name":"The Ancient Cave",
+        "splits":[
+           "floor 1",
+           "floor",
+           "blobkill"
+        ]
+     }
+  ],
+  "definitions":[
+     {
+        "name":"start",
+        "address":"0x0370",
+        "value":"115",
+        "operator":"==",
+        "type":"byte"
+     },
+     {
+        "name":"floor 1",
+        "address":"0x0B75",
+        "value":"2",
+        "operator":"==",
+        "type":"byte"
+     },
+     {
+        "name":"floor",
+        "address":"0x0B75",
+        "value":"1",
+        "operator":"delta",
+        "type":"byte",
+        "repeat":"96"
+     },
+     {
+        "name":"blobkill",
+        "address":"0x0B75",
+        "value":"99",
+        "operator":"==",
+        "type":"byte",
+        "next":[
+           {
+              "address":"0x421d",
+              "value":"31",
+              "operator":"==",
+              "type":"byte"
+           },
+           {
+              "address":"0x11E8",
+              "value":"3",
+              "operator":"<=",
+              "type":"byte"
+           }
+        ]
+     }
+  ]
+}
