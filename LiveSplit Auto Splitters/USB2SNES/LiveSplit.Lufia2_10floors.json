@@ -1,0 +1,140 @@
+{
+  "game":"Lufia II: Rise of the Sinistrals",
+  "autostart":"town",
+  "categories":[
+     {
+        "name":"The Ancient Cave",
+        "splits":[
+           "floor 10",
+           "floor 20",
+           "floor 30",
+           "floor 40",
+           "floor 50",
+           "floor 60",
+           "floor 70",
+           "floor 80",
+           "floor 90",
+           "floor 98",
+           "blobkill"
+        ]
+     }
+  ],
+  "definitions":[
+     {
+        "name":"town",
+        "address":"0x0370",
+        "value":"115",
+        "operator":"==",
+        "type":"byte"
+     },
+     
+     {
+      "name":"floor",
+      "address":"0x0B75",
+      "value":"1",
+      "operator":"delta",
+      "type":"byte",
+      "repeat":"96"
+      },
+
+     {
+        "name":"floor 1",
+        "address":"0x0B75",
+        "value":"2",
+        "operator":"==",
+        "type":"byte"
+     },
+     {
+        "name":"floor 10",
+        "address":"0x0B75",
+        "value":"11",
+        "operator":"==",
+        "type":"byte"
+     },
+     {
+        "name":"floor 20",
+        "address":"0x0B75",
+        "value":"21",
+        "operator":"==",
+        "type":"byte"
+     },
+     {
+        "name":"floor 30",
+        "address":"0x0B75",
+        "value":"31",
+        "operator":"==",
+        "type":"byte"
+     },
+     {
+        "name":"floor 40",
+        "address":"0x0B75",
+        "value":"41",
+        "operator":"==",
+        "type":"byte"
+     },
+     {
+        "name":"floor 50",
+        "address":"0x0B75",
+        "value":"51",
+        "operator":"==",
+        "type":"byte"
+     },
+     {
+        "name":"floor 60",
+        "address":"0x0B75",
+        "value":"61",
+        "operator":"==",
+        "type":"byte"
+     },
+     {
+        "name":"floor 70",
+        "address":"0x0B75",
+        "value":"71",
+        "operator":"==",
+        "type":"byte"
+     },
+     {
+        "name":"floor 80",
+        "address":"0x0B75",
+        "value":"81",
+        "operator":"==",
+        "type":"byte"
+     },
+     {
+        "name":"floor 90",
+        "address":"0x0B75",
+        "value":"91",
+        "operator":"==",
+        "type":"byte"
+     },
+     {
+        "name":"floor 98",
+        "address":"0x0B75",
+        "value":"99",
+        "operator":"==",
+        "type":"byte"
+     },
+
+     {
+        "name":"blobkill",
+        "address":"0x0B75",
+        "value":"99",
+        "operator":"==",
+        "type":"byte",
+        "next":[
+           {
+              "address":"0x421d",
+              "value":"31",
+              "operator":"==",
+              "type":"byte"
+           },
+           {
+              "address":"0x11E8",
+              "value":"3",
+              "operator":"<=",
+              "type":"byte"
+           }
+        ]
+     }
+  ]
+}
