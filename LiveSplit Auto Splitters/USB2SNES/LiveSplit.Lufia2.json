@@ -15,9 +15,17 @@
       {
          "name":"town",
          "address":"0x0370",
-         "value":"115",
+         "value":"85",
          "operator":"==",
-         "type":"byte"
+         "type":"byte",
+         "next":[
+            {
+             "address":"0x0370",
+             "value":"115",
+             "operator":"==",
+             "type":"byte"
+            }
+         ]
       },
       
       {
