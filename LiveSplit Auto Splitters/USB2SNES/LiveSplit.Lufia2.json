@@ -1,114 +1,145 @@
 {
    "game":"Lufia II: Rise of the Sinistrals",
-   "autostart":"town",
-   "categories":[
+   "settings": {
+     "debug": true,
+     "hideConnectionBar": false
+   },
+
+   "autostart":{
+      "name":"town",
+      "description": "Town",
+      "tooltip": "",
+      "address":"0x0370",
+      "value":"85",
+      "operator":"==",
+      "type":"byte",
+      "next":[
+         {
+          "address":"0x0370",
+          "value":"115",
+          "operator":"==",
+          "type":"byte"
+         }
+      ]
+   },
+
+   "splits":[
       {
-         "name":"The Ancient Cave",
-         "splits":[
-            "floor 1",
-            "floor",
-            "blobkill"
-         ]
-      }
-   ],
-   "definitions":[
-      {
-         "name":"town",
-         "address":"0x0370",
-         "value":"85",
-         "operator":"==",
-         "type":"byte",
-         "next":[
-            {
-             "address":"0x0370",
-             "value":"115",
-             "operator":"==",
-             "type":"byte"
-            }
-         ]
-      },
-      
-      {
-       "name":"floor",
-       "address":"0x0B75",
-       "value":"1",
-       "operator":"delta",
-       "type":"byte",
-       "repeat":"96"
-       },
- 
-      {
-         "name":"floor 1",
+         "name":"floor1",
+         "description": "Floor 1",
+         "tooltip": "",
+         "active": true,
          "address":"0x0B75",
          "value":"2",
          "operator":"==",
          "type":"byte"
       },
+
       {
-         "name":"floor 10",
-         "address":"0x0B75",
-         "value":"11",
-         "operator":"==",
-         "type":"byte"
+       "name":"floorAny",
+       "description": "On Every Floor Change",
+       "tooltip": "",
+       "active": true,
+       "address":"0x0B75",
+       "value":"1",
+       "operator":"delta==",
+       "type":"byte",
+       "repeat":"96"
+       },
+      {
+         "name":"10floors",
+         "description": "Every 10th Floor",
+         "tooltip": "",
+         "children":[
+            {
+               "name":"floor10",
+               "description": "Floor 10",
+               "tooltip": "",
+               "address":"0x0B75",
+               "value":"11",
+               "operator":"==",
+               "type":"byte"
+            },
+            {
+               "name":"floor20",
+               "description": "Floor 20",
+               "tooltip": "",
+               "address":"0x0B75",
+               "value":"21",
+               "operator":"==",
+               "type":"byte"
+            },
+            {
+               "name":"floor30",
+               "description": "Floor 30",
+               "tooltip": "",
+               "address":"0x0B75",
+               "value":"31",
+               "operator":"==",
+               "type":"byte"
+            },
+            {
+               "name":"floor40",
+               "description": "Floor 40",
+               "tooltip": "",
+               "address":"0x0B75",
+               "value":"41",
+               "operator":"==",
+               "type":"byte"
+            },
+            {
+               "name":"floor50",
+               "description": "Floor 50",
+               "tooltip": "",
+               "address":"0x0B75",
+               "value":"51",
+               "operator":"==",
+               "type":"byte"
+            },
+            {
+               "name":"floor60",
+               "description": "Floor 60",
+               "tooltip": "",
+               "address":"0x0B75",
+               "value":"61",
+               "operator":"==",
+               "type":"byte"
+            },
+            {
+               "name":"floor70",
+               "description": "Floor 70",
+               "tooltip": "",
+               "address":"0x0B75",
+               "value":"71",
+               "operator":"==",
+               "type":"byte"
+            },
+            {
+               "name":"floor80",
+               "description": "Floor 80",
+               "tooltip": "",
+               "address":"0x0B75",
+               "value":"81",
+               "operator":"==",
+               "type":"byte"
+            },
+            {
+               "name":"floor90",
+               "description": "Floor 90",
+               "tooltip": "",
+               "address":"0x0B75",
+               "value":"91",
+               "operator":"==",
+               "type":"byte"
+            }
+         ]
       },
+
       {
-         "name":"floor 20",
-         "address":"0x0B75",
-         "value":"21",
-         "operator":"==",
-         "type":"byte"
-      },
-      {
-         "name":"floor 30",
-         "address":"0x0B75",
-         "value":"31",
-         "operator":"==",
-         "type":"byte"
-      },
-      {
-         "name":"floor 40",
-         "address":"0x0B75",
-         "value":"41",
-         "operator":"==",
-         "type":"byte"
-      },
-      {
-         "name":"floor 50",
-         "address":"0x0B75",
-         "value":"51",
-         "operator":"==",
-         "type":"byte"
-      },
-      {
-         "name":"floor 60",
-         "address":"0x0B75",
-         "value":"61",
-         "operator":"==",
-         "type":"byte"
-      },
-      {
-         "name":"floor 70",
-         "address":"0x0B75",
-         "value":"71",
-         "operator":"==",
-         "type":"byte"
-      },
-      {
-         "name":"floor 80",
-         "address":"0x0B75",
-         "value":"81",
-         "operator":"==",
-         "type":"byte"
-      },
-      {
-         "name":"floor 90",
-         "address":"0x0B75",
-         "value":"91",
-         "operator":"==",
-         "type":"byte"
-      },
-      {
-         "name":"floor 98",
+         "name":"floor98",
+         "description": "Floor 98",
+         "tooltip": "",
+         "active": true,
          "address":"0x0B75",
          "value":"99",
          "operator":"==",
@@ -117,6 +148,9 @@
  
       {
          "name":"blobkill",
+         "description": "Blob Kill",
+         "tooltip": "",
+         "active": true,
          "address":"0x0B75",
          "value":"99",
          "operator":"==",
