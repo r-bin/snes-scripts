@@ -20,11 +20,11 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-8fba27 lda $8e001f,x [8ed619] A:0014 X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e NvmxdizC V: 13 H:256 F:52 // monster_evasion = 0
+8fba27 lda $8e001f,x [8ed619] A:0014 X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e NvmxdizC V: 13 H:256 F:52 // monster_evasion = 0 = [8e001f + sprite + 60]
 8fba2b inc                    A:0000 X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nvmxdiZC V: 13 H:265 F:52 // monster_evasion = 1 (^+1)
 8fba2c lsr a                  A:0001 X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 13 H:268 F:52 // monster_evasion = 0 (^>>1)
 8fba2d and #$fffe             A:0000 X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nvmxdiZC V: 13 H:271 F:52 // monster_evasion = 0 (^&fffe)
-8fba30 tax                    A:0000 X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nvmxdiZC V: 13 H:275 F:52 // X = A <- ((monster_evasion + 1) >> 1) % fffe
+8fba30 tax                    A:0000 X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nvmxdiZC V: 13 H:275 F:52 // X = A <- ((monster_evasion + 1) >> 1) & fffe
 8fba31 lda $8fbaaf,x [8fbaaf] A:0000 X:0000 Y:41c7 S:1fd9 D:0000 DB:7e nvmxdiZC V: 13 H:278 F:52 // A = 8fbaaf + X <- memory editor 8fbaaf: "[bae3] bb17 bb4b bb7f bbb3 bbe7 bc1b bc4f  bc83 bcb7 bceb bd1f bd53 bd87 bdbb bdef  be23 be57 be8b bebf bef3 bf27 bf5b bf8f  bfc3 bff7"
 8fba35 sta $12       [000012] A:bae3 X:0000 Y:41c7 S:1fd9 D:0000 DB:7e NvmxdizC V: 13 H:287 F:52 // 000012 = A <- 8fbaaf[f(monster_evasion)] <- monster_evasion: 0%=0, 5%=2, 7%=8%=9%=10%=4, 14%=6 15%=8, 25%=c 30%=e, 40%=14, 100%=32 (negative numbers)
 
@@ -124,7 +124,7 @@
 8fc076 lsr a                  A:001c X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nVmxdizc V: 15 H:156 F:52 // A / 2
 8fc077 lsr a                  A:000e X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nVmxdizc V: 15 H:159 F:52 // A / 2
 8fc078 clc                    A:0007 X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nVmxdizc V: 15 H:162 F:52 // clear carry
-8fc079 sbc $12       [000012] A:0007 X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nVmxdizc V: 15 H:165 F:52 // A - 000012
+8fc079 sbc $12       [000012] A:0007 X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nVmxdizc V: 15 H:165 F:52 // A - 000012 - 1
 8fc07b eor #$ffff             A:fff5 X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e Nvmxdizc V: 15 H:172 F:52 // !A
 8fc07e cmp #$0001             A:000a X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 15 H:176 F:52 // A == 1?
 8fc081 bpl $c086     [8fc086] A:000a X:d5fa Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 15 H:181 F:52 // branch if plus <- dmg > 1?
@@ -164,44 +164,44 @@
 8085d4 sta $0133     [800133] A:fc4f X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 Nvmxdizc V: 16 H: 70 F:52 // "Shifting registers for random number generator"
 8085d7 rtl                    A:fc4f X:d5fa Y:41c7 S:1fd0 D:0000 DB:80 Nvmxdizc V: 16 H: 79 F:52 // RTL
 
-80ad6c sta $10       [000010] A:fc4f X:d5fa Y:41c7 S:1fd3 D:0000 DB:80 Nvmxdizc V: 16 H: 89 F:52 // 000010 = A
+80ad6c sta $10       [000010] A:fc4f X:d5fa Y:41c7 S:1fd3 D:0000 DB:80 Nvmxdizc V: 16 H: 89 F:52 // 000010 = A = RNG (000010=4f=RNG_low, 000011=fc=RNG_high)
 80ad6e tay                    A:fc4f X:d5fa Y:41c7 S:1fd3 D:0000 DB:80 Nvmxdizc V: 16 H: 96 F:52 // Y = A
 80ad6f ldx $02       [000002] A:fc4f X:d5fa Y:fc4f S:1fd3 D:0000 DB:80 Nvmxdizc V: 16 H: 99 F:52 // X = 000002 <- monster_pseudo_armor ?
 80ad71 txa                    A:fc4f X:000b Y:fc4f S:1fd3 D:0000 DB:80 nvmxdizc V: 16 H:106 F:52 // A = X
 80ad72 and #$ff00             A:000b X:000b Y:fc4f S:1fd3 D:0000 DB:80 nvmxdizc V: 16 H:109 F:52 // A & ff00
 80ad75 beq $adc1     [80adc1] A:0000 X:000b Y:fc4f S:1fd3 D:0000 DB:80 nvmxdiZc V: 16 H:114 F:52 // brach if equal
 
-80adc1 sep #$10               A:0000 X:000b Y:fc4f S:1fd3 D:0000 DB:80 nvmxdiZc V: 16 H:118 F:52 // set processor status #10 (8bit index registers)
-80adc3 stx $4202     [804202] A:0000 X:000b Y:004f S:1fd3 D:0000 DB:80 nvmXdiZc V: 16 H:123 F:52 // 804202 = X <- "Monster/NPC data for the current room. Each Monster/NPC gets x8E bytes of data."[?] + 3b
-80adc6 sty $4203     [804203] A:0000 X:000b Y:004f S:1fd3 D:0000 DB:80 nvmXdiZc V: 16 H:129 F:52 // 804203 = Y <- "Monster/NPC data for the current room. Each Monster/NPC gets x8E bytes of data."[?] + 3c <- RNG
-80adc9 nop                    A:0000 X:000b Y:004f S:1fd3 D:0000 DB:80 nvmXdiZc V: 16 H:145 F:52
-80adca ldy $11       [000011] A:0000 X:000b Y:004f S:1fd3 D:0000 DB:80 nvmXdiZc V: 16 H:148 F:52 // Y = 000011
-80adcc lda $4216     [804216] A:0000 X:000b Y:00fc S:1fd3 D:0000 DB:80 NvmXdizc V: 16 H:153 F:52 // A = 804216 <- "Monster/NPC data for the current room. Each Monster/NPC gets x8E bytes of data."[?] + 4e
-80adcf sta $0a       [00000a] A:0365 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:160 F:52 // 00000a = A
-80add1 stx $4202     [804202] A:0365 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:167 F:52 // 804202 = X <- "Monster/NPC data for the current room. Each Monster/NPC gets x8E bytes of data."[?] + 3b
-80add4 sty $4203     [804203] A:0365 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:173 F:52 // 804203 = Y <- "Monster/NPC data for the current room. Each Monster/NPC gets x8E bytes of data."[?] + 3c <- RNG
+80adc1 sep #$10               A:0000 X:000b Y:fc4f S:1fd3 D:0000 DB:80 nvmxdiZc V: 16 H:118 F:52 // set processor status #10 (8bit index registers X/Y)
+80adc3 stx $4202     [804202] A:0000 X:000b Y:004f S:1fd3 D:0000 DB:80 nvmXdiZc V: 16 H:123 F:52 // 804202 = X <- "Multiplicand A" = monster_pseudo_armor&ff
+80adc6 sty $4203     [804203] A:0000 X:000b Y:004f S:1fd3 D:0000 DB:80 nvmXdiZc V: 16 H:129 F:52 // 804203 = Y <- "Multplier B" = RNG_low&ff
+80adc9 nop                    A:0000 X:000b Y:004f S:1fd3 D:0000 DB:80 nvmXdiZc V: 16 H:145 F:52 // wait for muliplier
+80adca ldy $11       [000011] A:0000 X:000b Y:004f S:1fd3 D:0000 DB:80 nvmXdiZc V: 16 H:148 F:52 // Y = 000011 <- RNG_high
+80adcc lda $4216     [804216] A:0000 X:000b Y:00fc S:1fd3 D:0000 DB:80 NvmXdizc V: 16 H:153 F:52 // A = 804216 <- "Product/Remainder Result (Low Byte)"
+80adcf sta $0a       [00000a] A:0365 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:160 F:52 // 00000a = A = X * Y = monster_pseudo_armor&ff * RNG_low&ff = 0b * 4f = 0365 (00000a=65, 00000b=03)
+80add1 stx $4202     [804202] A:0365 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:167 F:52 // 804202 = X <- "Multiplicand A" <- monster_pseudo_armor&ff
+80add4 sty $4203     [804203] A:0365 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:173 F:52 // 804203 = Y <- "Multplier B" <- RNG_high&ff
 80add7 stz $0c       [00000c] A:0365 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:179 F:52 // 00000c = 0 (16 bit)
-80add9 nop                    A:0365 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:186 F:52
-80adda lda $4216     [804216] A:0365 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:189 F:52 // A = 804216 <- "Monster/NPC data for the current room. Each Monster/NPC gets x8E bytes of data."[?] + 4e
+80add9 nop                    A:0365 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:186 F:52 // wait for muliplier
+80adda lda $4216     [804216] A:0365 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:189 F:52 // A = 804216 = X * Y = monster_pseudo_armor&ff * RNG_high&ff = 0b * fc = 0ad4 <- "Product/Remainder Result (Low Byte)"
 80addd clc                    A:0ad4 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:197 F:52 // clear carry
-80adde adc $0b       [00000b] A:0ad4 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:200 F:52 // A + 00000b = RNG increment
-80ade0 sta $0b       [00000b] A:0ad7 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:207 F:52 // 00000b = A (16 bit) <- writes the MSB into 00000c (LSB)
+80adde adc $0b       [00000b] A:0ad4 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:200 F:52 // A + 00000b <- monster_pseudo_armor&ff * RNG_high&ff + (monster_pseudo_armor&ff * RNG_low&ff) >>> 1 = 0ad4 + 0003 = 0ad7
+80ade0 sta $0b       [00000b] A:0ad7 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:207 F:52 // 00000b = A (16 bit) <- (00000b=d7, 00000c=0a)
 80ade2 bcc $ade6     [80ade6] A:0ad7 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:214 F:52 // branch if carry clear
 80ade6 rep #$10               A:0ad7 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmXdizc V: 16 H:218 F:52 // reset processor status
 80ade8 plb                    A:0ad7 X:000b Y:00fc S:1fd3 D:0000 DB:80 nvmxdizc V: 16 H:223 F:52 // pull DB
-80ade9 lda $0c       [00000c] A:0ad7 X:000b Y:00fc S:1fd4 D:0000 DB:7e nvmxdizc V: 16 H:229 F:52 // A = 00000c <- indirectly via 00000b: 00000b >> 8 = pseudo RNG
+80ade9 lda $0c       [00000c] A:0ad7 X:000b Y:00fc S:1fd4 D:0000 DB:7e nvmxdizc V: 16 H:229 F:52 // A = 00000c = (A + 00000b) >>> 1 = ((X * Y + 00000b) >>> 1 <- monster_pseudo_armor&ff * RNG_high&ff + (monster_pseudo_armor&ff * RNG_low&ff) >>> 1) >>> 1 = 0a
 80adeb sta $02       [000002] A:000a X:000b Y:00fc S:1fd4 D:0000 DB:7e nvmxdizc V: 16 H:236 F:52 // 000002 = A
 80aded stz $04       [000004] A:000a X:000b Y:00fc S:1fd4 D:0000 DB:7e nvmxdizc V: 16 H:243 F:52 // 000004 = 0
-80adef rtl                    A:000a X:000b Y:00fc S:1fd4 D:0000 DB:7e nvmxdizc V: 16 H:250 F:52 // RTL <- damage seed
+80adef rtl                    A:000a X:000b Y:00fc S:1fd4 D:0000 DB:7e nvmxdizc V: 16 H:250 F:52 // RTL <- damage_seed = A = 00000c = ((X * Y + 00000b) >>> 1 <- monster_pseudo_armor&ff * RNG_high&ff + (monster_pseudo_armor&ff * RNG_low&ff) >>> 1) >>> 1 = 0a
 
 8fc090 ply                    A:000a X:000b Y:00fc S:1fd7 D:0000 DB:7e nvmxdizc V: 16 H:261 F:52 // pull Y = 41c7
 8fc091 clc                    A:000a X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 16 H:269 F:52 // clear carry
-8fc092 adc $12       [000012] A:000a X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 16 H:272 F:52 // A + 000012
+8fc092 adc $12       [000012] A:000a X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 16 H:272 F:52 // A + 000012 = damage_seed + charge_dependent_attack
 8fc094 asl a                  A:0014 X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 16 H:279 F:52 // A * 2
-8fc095 adc $12       [000012] A:0028 X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 16 H:282 F:52 // A + 000012
+8fc095 adc $12       [000012] A:0028 X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 16 H:282 F:52 // A + 000012 = ((damage_seed + charge_dependent_attack) << 1) + charge_dependent_attack
 8fc097 lsr a                  A:0032 X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 16 H:289 F:52 // A / 2
 8fc098 lsr a                  A:0019 X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizc V: 16 H:292 F:52 // A / 2
-8fc099 rtl                    A:000c X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 16 H:295 F:52 // RTL -> A = ((A + 000012) <<< 1 + 000012 ) / 2 / 2 <- inflicted damage, 000012 = boy_attack > 1
+8fc099 rtl                    A:000c X:000b Y:41c7 S:1fd9 D:0000 DB:7e nvmxdizC V: 16 H:295 F:52 // RTL -> A = ((damage_seed + charge_dependent_attack) << 1 + charge_dependent_attack ) / 2 / 2 <- inflicted damage
 
 
 
