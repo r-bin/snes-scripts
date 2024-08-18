@@ -256,6 +256,33 @@ elseif not event then
   end
 else
   is_bizhawk = true
+  if client.getversion() >= "2.9" then
+    bit.band = function (a, b)
+      a = math.floor(a)
+      b = math.floor(b)
+      return a & b
+    end
+	bit.rshift = function (a, b)
+		a = math.floor(a)
+		b = math.floor(b)
+		return a >> b
+	end
+	bit.lshift = function (a, b)
+		a = math.floor(a)
+		b = math.floor(b)
+		return a << b
+	end
+	bit.bnot = function (a)
+		a = math.floor(a)
+		return ~a
+	end
+    client.transformPointX = function (val)
+      return client.transformPoint(val, 0).x
+    end
+    client.transformPointY = function (val)
+      return client.transformPoint(0, val).y
+    end
+  end
 end
 
 function DrawNiceText(text_x, text_y, str, color)
@@ -384,7 +411,7 @@ end
 
 local function join_data_map(map, devider, string_format)
 	devider = devider or ","
-	string_format = string_format or "% 4X"
+	string_format = string_format or "%4X"
 	local result = ""
 
 	for i, number in pairs(map) do
@@ -463,7 +490,7 @@ local function damage_from_boy(sprite, attack, energy, monster_type)
 				else
 					--console.writeline(last_dmg .. "->" .. dmg)
 					if j > 0 then
-						damage_range = string.format("%s%s%d(%d%%)", damage_range, string.len(damage_range) > 0 and "," or "", last_dmg, 100.0*j/#damage)
+						damage_range = string.format("%s%s%d(%f%%)", damage_range, string.len(damage_range) > 0 and "," or "", last_dmg, 100.0*j/#damage)
 					end
 					j = 1
 					last_dmg = dmg
@@ -494,7 +521,7 @@ local function damage_from_boy(sprite, attack, energy, monster_type)
 		damage_range_for_enemies[index] = damage_range
 	end
 	
-	debug_string = string.format("idx=%d, attack=%X (%X), energy=%X, type=%X (%X), wram[0012]=%X (%X), %s",
+	debug_string = string.format("idx=%f, attack=%X (%X), energy=%X, type=%X (%X), wram[0012]=%X (%X), %s",
 		sprite["slot"],
 		attack, attack_modified, energy,
 		monster_type, monster_resistence,
@@ -731,11 +758,11 @@ local function draw_sprites(frame)
     gui.text(0, 0, string.format("Number of sprites:%2d",#frame['sprites']))
     for i, sprite in pairs(frame['sprites']) do
         if show_sprite_data then
-            gui.text(0, 50 + i * 60, string.format("%d|%X - stype : %04X/%04X - pos[% 4d, % 4d] - HP: %02d - Tile Pos[% 2d, % 2d]",
+            gui.text(0, 50 + i * 60, string.format("%d|%X - stype : %04X/%04X - pos[%4d, %4d] - HP: %02d - Tile Pos[%2d, %2d]",
                      i, sprite['index'], sprite['stype'], sprite['rom_ptr'], sprite['pos_x'], sprite['pos_y'], sprite['hp'], sprite['x_tile'], sprite['y_tile']), 0xFFFF0000)
             local tmpstr = ""
             for j = 1, 51 do
-                tmpstr = tmpstr .. string.format("[%d]% 4X,", j, sprite['unknown'][j])
+                tmpstr = tmpstr .. string.format("[%d]%4X,", j, sprite['unknown'][j])
 				if j == 20 or j == 40 then
 					tmpstr = tmpstr .. "\n"
 				end
@@ -745,11 +772,11 @@ local function draw_sprites(frame)
 		
 		local labels = {
 			left = {
-				{ text = string.format("% 4X", sprite['index']), color = 0xFFFFFFFF },
-				{ text = string.format("% 4X", sprite['diagev']), color = 0xFFFFFFFF },
+				{ text = string.format("%4X", sprite['index']), color = 0xFFFFFFFF },
+				{ text = string.format("%4X", sprite['diagev']), color = 0xFFFFFFFF },
 				
-				{ text = string.format("dx=%3d", sprite['x_avg']), color = 0xFFFF0000 },
-				{ text = string.format("dy=%3d", sprite['y_avg']), color = 0xFFFF0000 },
+				{ text = string.format("dx=%3d", math.floor(sprite['x_avg'])), color = 0xFFFF0000 },
+				{ text = string.format("dy=%3d", math.floor(sprite['y_avg'])), color = 0xFFFF0000 },
 			},
 			right = {
 				{ text = "\""..sprite['name'].."\"", color = 0xFFFFFFFF },
@@ -878,12 +905,12 @@ local function load_script(idx, sprites)
 			local value = memory.read_u8(0x7E28FC + idx * 0x4f + i)
 			table.insert(script['unknown'], value)
 		end
-		script['unknown_string'] = join_data_map(script['unknown'], "", "% 2X")
+		script['unknown_string'] = join_data_map(script['unknown'], "", "%2X")
 	else
 		script['unknown_string'] = "-"
 	end
 	
-	script['known_string'] = string.format("% 4X% 2X% 3X", script['timer1'], script['timer2'], script['timer3'])
+	script['known_string'] = string.format("%4X%2X%3X", script['timer1'], script['timer2'], script['timer3'])
 	
 	script['entity_name'] = string.format("%04X", script['entity'])
 	for i, sprite in pairs(sprites) do
@@ -931,10 +958,10 @@ local function draw_scripts(frame)
 	local x = 0
 	local y = screen_height - 21 * 16
 	
-    gui.text(x, y, string.format("Number of scripts:% 2d/20 ([slot], location, [args], id/\"name\")", #scripts + 1))
+    gui.text(x, y, string.format("Number of scripts:%2d/20 ([slot], location, [args], id/\"name\")", #scripts + 1))
     for i, script in pairs(scripts) do
 		-- console.writeline(string.format("script[%d](location=%03X, active=%02X, timer=%03X, next=%02X, entity=%02X", i, script['location'], script['active'], script['timer'], script['next_script'], script['entity']))
-        gui.text(x, y + 15*(i + 1), string.format("[%2d][%s](% 6X, [%s][%s][%s]",
+        gui.text(x, y + 15*(i + 1), string.format("[%2d][%s](%6X, [%s][%s][%s]",
 				i,
 				script['next_slot'],
 				script['location'],
@@ -1128,7 +1155,7 @@ local watchers = {
 				mainmemory.read_u16_le(0x4EE3),
 				mainmemory.read_u16_le(0x4EE5))
 		end,
-		function() return string.format("Boy Attack = % 4d\n(Underflows to % 5d)",
+		function() return string.format("Boy Attack = %4d\n(Underflows to %5d)",
 				mainmemory.read_u16_le(0x0A3F),
 				mainmemory.read_u16_le(0x0A3F) - mainmemory.read_u16_le(0x4ED3))
 		end,
@@ -1181,7 +1208,7 @@ local watchers = {
 	},
 	[0x0A] = { -- nobilia
 		function() return string.format("Old man rng = %04X\n(1-3=mandetory, 6-8=armor)", mainmemory.read_u16_le(0x244f)) end,
-		function() return string.format("Egg rng = % 2d\n(0-15, 7 = Egg)", mainmemory.read_u16_le(0x289f)) end,
+		function() return string.format("Egg rng = %2d\n(0-15, 7 = Egg)", mainmemory.read_u16_le(0x289f)) end,
 	},
 	[0x1d] = { -- vigor
 		--function() return string.format("*Vigor = %04X\n(?)", mainmemory.read_u16_le(0x2835)) end,
@@ -1252,7 +1279,7 @@ local watchers = {
 	[0x6d] = { -- aquagoth
 		function()
 			local entity = mainmemory.read_u16_le(mainmemory.read_u16_le(0x283b) + 0x2A)
-			return string.format("Boss hp = % 4d\n(<1k + rng&7 = Oglin)", entity)
+			return string.format("Boss hp = %4d\n(<1k + rng&7 = Oglin)", entity)
 		end,
 		function() return string.format("AI reaction triggered = %1X\n(rng: spell or oglin)", mainmemory.read_u16_le(0x2845)) end,
 		
